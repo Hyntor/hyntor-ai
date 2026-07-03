@@ -780,3 +780,36 @@ course, node click shows detail, badge shows "AI not configured" state).
 Open/next: mobile parity is PAUSED by user request. Stripe: USER IS BUILDING IT THEMSELVES -
 do not implement billing; upgradeToPro/downgradeToFree remain placeholders for their work.
 Email verification still paused (RESEND_API_KEY absent). AI features await ANTHROPIC_API_KEY.
+
+### 2026-07-03 - Claude Code - Brand pass: logo, icons, library marketing, school recognition
+
+Summary:
+- **New logo mark** (components/ui.tsx LogoMark + app/icon.svg favicon): two rounded pillars +
+  a tilted sheet passing between them - reads as an H; gradient squircle. Used in app sidebar,
+  landing nav/footer, browser tab.
+- **Real icons replace two-letter marks** across apps/web (new dep: lucide-react). MODE_META /
+  WORKSPACE_TYPE_META / CONTEXT_TYPE_META now carry `icon: LucideIcon` instead of `mark: string`
+  (touch points: sidebar NAV, tutor mode picker, discussion type chips, dashboard quick actions,
+  workspace pages). Mobile untouched (paused).
+- **Landing: AI hero KEPT by user request** ("Don't just get the answer. Actually learn it." +
+  typewriter HeroDemo + "Your whole class, one brain" steps + tier showcase all restored after a
+  library-first rewrite was walked back). Library is now marketed harder INSIDE that page: new
+  "Materials outlive the semester" section (#legacy, semester bar chart: 12->43->84->You),
+  bento reworked - big "One shared class library" tile (upvoted file rows) + "Real past exams"
+  tile REPLACING the mock-exam and flashcard tiles; Pro pricing copy = "AI that has read
+  everything your class ever shared". Footer: "(c) 2026 Hyntor. All rights reserved."
+- **School auto-recognition**: new packages/api/src/universities.ts - curated domain->official
+  name map (~280 schools worldwide incl. Mongolia) with subdomain walk-up; auth
+  resolveUniversityId uses it (fallback: old prettifyDomain) and SELF-HEALS known rows' names on
+  next signup (never touches unknown/hand-named rows, so "Demo University" survives). School
+  courses already surface via schoolHub/course.browse (university-scoped).
+- README intro rewritten: AI tagline kept, library+inheritance story added; root metadata same.
+
+Product decisions recorded (user, July 3): AI hero copy IS the brand; library is the co-star;
+Pro = "AI reads the whole class's library". Monetization: NO Anthropic rev-share exists - the
+model is buy API wholesale, price Pro thin ($6/mo), margin = difference; usage caps are a
+future task. Stripe still the USER'S to build.
+
+Checks: typecheck clean, next build clean (18 pages), browser-verified (hero, #legacy bars,
+tiers, (c) footer, icons+logo in app sidebar, zero console errors), resolver smoke-tested
+(stanford/cs.stanford/num.edu.mn/u.nus.edu/unknown).
