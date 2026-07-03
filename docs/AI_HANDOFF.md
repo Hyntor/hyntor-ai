@@ -813,3 +813,25 @@ future task. Stripe still the USER'S to build.
 Checks: typecheck clean, next build clean (18 pages), browser-verified (hero, #legacy bars,
 tiers, (c) footer, icons+logo in app sidebar, zero console errors), resolver smoke-tested
 (stanford/cs.stanford/num.edu.mn/u.nus.edu/unknown).
+
+### 2026-07-03 - Claude Code - Signup email validity check (DNS) + school-name preview
+
+Summary:
+- **Signup now rejects emails on domains that can't receive mail.** New
+  `emailDomainReceivesMail()` in packages/api/src/auth.ts: MX lookup first (c-ares), then a
+  dns.lookup (OS resolver) existence fallback - ENOTFOUND/ENODATA => reject with a friendly
+  "doesn't appear to be a real email domain" error; timeouts/flaky DNS FAIL OPEN so real
+  students are never blocked. Known free-mail domains skip the lookup. Called from signupUser
+  only (Google emails are already real). NOTE: full ownership proof still needs RESEND_API_KEY
+  (paused verification flow auto-resumes when set) - this is deliverability, not ownership.
+- **Signup school preview uses real names**: user.schoolRecognition's "new school" branch now
+  consults lookupUniversityName, so typing student@yonsei.ac.kr shows "Yonsei University -
+  School recognized" before the space even exists.
+- Gotcha discovered: this dev sandbox blocks raw DNS (resolveMx/resolve4 => ECONNREFUSED for
+  everything) but dns.lookup (getaddrinfo) works - which is why the OS-resolver fallback layer
+  exists. Verified in-browser: fake domain rejected in the signup form, bad format caught by
+  zod, mit.edu passes, yonsei.ac.kr previews correctly. Test users + junk university rows
+  cleaned from the dev DB.
+
+Files: packages/api/src/auth.ts, packages/api/src/routers/user.ts.
+Checks: typecheck clean, next build clean, browser-verified via real signup form.

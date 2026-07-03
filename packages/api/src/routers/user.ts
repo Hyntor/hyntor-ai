@@ -12,6 +12,7 @@ import {
   signMobileToken,
 } from "../auth";
 import { isEmailConfigured, sendVerificationEmail } from "../email";
+import { lookupUniversityName } from "../universities";
 
 // "Are we on the real hosted site?" Vercel sets this on every deployment.
 // Used to keep the dev convenience (returning the code) OUT of production.
@@ -52,14 +53,20 @@ export const userRouter = router({
       });
 
       if (!university) {
+        // Known school domain? Greet the student with the school's REAL name
+        // even before its space exists ("Stanford University", not
+        // "Stanford (stanford.edu)").
+        const officialName = lookupUniversityName(domain);
         return {
           status: "new_school" as const,
           domain,
-          schoolName: prettifyDomain(domain),
-          known: false,
+          schoolName: officialName ?? prettifyDomain(domain),
+          known: Boolean(officialName),
           courseCount: 0,
           resourceCount: 0,
-          message: "New school space detected. Hyntor will create it when you sign up.",
+          message: officialName
+            ? "School recognized. Hyntor will open its space when you sign up."
+            : "New school space detected. Hyntor will create it when you sign up.",
         };
       }
 

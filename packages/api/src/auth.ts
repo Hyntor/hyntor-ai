@@ -4,6 +4,7 @@
 //    signMobileToken(); every later request sends "Authorization: Bearer <jwt>"
 // One user store, one password check, two transport mechanisms.
 import crypto from "crypto";
+import { promises as dns } from "dns";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@coursemind/db";
@@ -47,6 +48,57 @@ export function isPersonalEmailDomain(domain: string): boolean {
 export function prettifyDomain(domain: string): string {
   const base = domain.split(".")[0];
   return `${base.charAt(0).toUpperCase()}${base.slice(1)} (${domain})`;
+}
+
+// ---------- Email deliverability (DNS) ----------
+// Ownership can only be PROVEN by the emailed code (needs RESEND_API_KEY),
+// but we can always catch made-up domains and typos at signup: a real email
+// address lives on a domain with mail setup. Policy:
+//   - domain has MX records (or an A/AAAA record - RFC 5321 fallback) -> OK
+//   - domain doesn't resolve / has no mail setup (ENOTFOUND/ENODATA) -> reject
+//   - DNS timeout or transient failure -> ALLOW (fail-open: never block a
+//     real student because DNS hiccuped)
+
+const DNS_TIMEOUT_MS = 4000;
+
+function withDnsTimeout<T>(p: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(Object.assign(new Error("DNS lookup timed out"), { code: "ETIMEOUT" })),
+      DNS_TIMEOUT_MS
+    );
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer)) as Promise<T>;
+}
+
+function isNoSuchDomain(err: unknown): boolean {
+  const code = (err as NodeJS.ErrnoException)?.code;
+  return code === "ENOTFOUND" || code === "ENODATA";
+}
+
+export async function emailDomainReceivesMail(domain: string): Promise<boolean> {
+  // Preferred signal: MX records (uses the network resolver, c-ares).
+  // ANY failure - no such domain, zero MX, resolver unreachable - falls
+  // through to the OS-resolver existence check below, which is a different
+  // resolution path (getaddrinfo: system DNS, hosts file, VPN) and often
+  // works where raw DNS is blocked.
+  try {
+    const mx = await withDnsTimeout(dns.resolveMx(domain));
+    if (mx.length > 0) return true;
+  } catch {
+    // fall through
+  }
+  // Existence check: a domain that exists but publishes no MX can still
+  // receive mail on its apex (RFC 5321), so existence = lenient pass;
+  // ENOTFOUND = definite reject; anything else (timeout, weird resolver
+  // state) fails open so a real student is never blocked by flaky DNS.
+  try {
+    await withDnsTimeout(dns.lookup(domain));
+    return true;
+  } catch (err) {
+    return !isNoSuchDomain(err);
+  }
 }
 
 function displayNameFromEmail(email: string): string {
@@ -105,6 +157,13 @@ export async function signupUser({ email, name, password }: SignupInput) {
   const normalized = email.toLowerCase().trim();
   const domain = schoolDomainFromEmail(normalized);
   if (!domain) throw new Error("Please enter a valid email address.");
+
+  // Known free-mail providers obviously receive mail - skip the DNS lookup.
+  if (!isPersonalEmailDomain(domain) && !(await emailDomainReceivesMail(domain))) {
+    throw new Error(
+      `"${domain}" doesn't appear to be a real email domain. Double-check for typos - use your actual school or personal email address.`
+    );
+  }
 
   const existing = await prisma.user.findUnique({ where: { email: normalized } });
   if (existing) {
