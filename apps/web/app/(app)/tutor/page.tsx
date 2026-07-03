@@ -87,11 +87,11 @@ function TutorHub() {
                 }`}
               >
                 <span
-                  className={`mb-4 grid h-9 w-9 place-items-center rounded-lg text-[11px] font-semibold ${
+                  className={`mb-4 grid h-9 w-9 place-items-center rounded-lg ${
                     mode === key ? "bg-ink text-white" : "bg-slate-100 text-brand-700 group-hover:bg-ink group-hover:text-white"
                   }`}
                 >
-                  {meta.mark}
+                  <meta.icon size={17} strokeWidth={2} aria-hidden="true" />
                 </span>
                 <p className="font-display font-semibold text-ink">{meta.label}</p>
                 <p className="mt-1 text-xs font-medium leading-relaxed text-slate-500">{meta.blurb}</p>

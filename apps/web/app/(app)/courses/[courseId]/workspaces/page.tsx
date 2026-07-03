@@ -94,7 +94,9 @@ export default function WorkspacesPage({ params }: { params: Promise<{ courseId:
                     : "border-slate-200/80 bg-white/70 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-card"
                 }`}
               >
-                <span className="icon-mark mb-4 bg-slate-100 text-brand-700">{meta.mark}</span>
+                <span className="icon-mark mb-4 bg-slate-100 text-brand-700">
+                  <meta.icon size={16} strokeWidth={2} aria-hidden="true" />
+                </span>
                 <p className="font-display font-semibold text-ink">{meta.label}</p>
                 <p className="mt-1 text-xs font-medium text-slate-500">
                   {key === "STUDY_GROUP"

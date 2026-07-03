@@ -11,6 +11,18 @@ import { THREAD_CONTEXT_TYPES } from "@coursemind/core";
 type Payload = Awaited<ReturnType<typeof api.discussion.listByCourse.query>>;
 type ContextType = (typeof THREAD_CONTEXT_TYPES)[number];
 
+/** Icon + label pair for a thread context type (picker + filter chips). */
+function TypeChip({ type }: { type: ContextType }) {
+  const meta = CONTEXT_TYPE_META[type];
+  const Icon = meta.icon;
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <Icon size={14} strokeWidth={2.2} aria-hidden="true" />
+      {meta.label}
+    </span>
+  );
+}
+
 export default function DiscussionsPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = use(params);
   const router = useRouter();
@@ -100,7 +112,7 @@ export default function DiscussionsPage({ params }: { params: Promise<{ courseId
                       : "border-slate-200 bg-white text-slate-600 hover:border-brand-200"
                   }`}
                 >
-                  {CONTEXT_TYPE_META[type].mark} {CONTEXT_TYPE_META[type].label}
+                  <TypeChip type={type} />
                 </button>
               ))}
             </div>
@@ -148,7 +160,7 @@ export default function DiscussionsPage({ params }: { params: Promise<{ courseId
                 : "bg-white/75 text-slate-600 ring-1 ring-slate-200 hover:bg-white"
             }`}
           >
-            {f === "ALL" ? "All threads" : `${CONTEXT_TYPE_META[f].mark} ${CONTEXT_TYPE_META[f].label}`}
+            {f === "ALL" ? "All threads" : <TypeChip type={f} />}
           </button>
         ))}
       </div>

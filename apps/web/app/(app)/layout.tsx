@@ -4,18 +4,27 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import {
+  Code,
+  GraduationCap,
+  LayoutDashboard,
+  Network,
+  Sparkles,
+  Terminal,
+  Trophy,
+} from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { serverApi } from "@/lib/server-api";
 import { Logo } from "@/components/ui";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", mark: "DB" },
-  { href: "/courses", label: "Courses", mark: "CR" },
-  { href: "/tutor", label: "AI Tutor", mark: "AI" },
-  { href: "/code-review", label: "Code Review", mark: "RV" },
-  { href: "/sandbox", label: "Sandbox", mark: "SB" },
-  { href: "/visualizer", label: "Visualizer", mark: "VZ" },
-  { href: "/leaderboard", label: "Leaderboard", mark: "LB" },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/courses", label: "Courses", icon: GraduationCap },
+  { href: "/tutor", label: "AI Tutor", icon: Sparkles },
+  { href: "/code-review", label: "Code Review", icon: Code },
+  { href: "/sandbox", label: "Sandbox", icon: Terminal },
+  { href: "/visualizer", label: "Visualizer", icon: Network },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
 function initials(name: string): string {
@@ -41,8 +50,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <nav className="mt-4 grid grid-cols-2 gap-2 pb-1 sm:flex sm:gap-1 sm:overflow-x-auto lg:mt-8 lg:flex-1 lg:flex-col lg:space-y-1 lg:overflow-visible lg:pb-0">
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="rail-link">
-              <span className="grid h-7 w-7 place-items-center rounded-md bg-slate-100 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
-                {item.mark}
+              <span className="grid h-7 w-7 place-items-center rounded-md bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                <item.icon size={15} strokeWidth={2} aria-hidden="true" />
               </span>
               {item.label}
             </Link>

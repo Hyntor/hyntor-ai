@@ -1,23 +1,24 @@
 import Link from "next/link";
+import { Code, ListChecks, Sparkles } from "lucide-react";
 import { serverApi } from "@/lib/server-api";
 import { EmptyState, MaterialTypeBadge, ModeBadge, PageHeader, TierBadge } from "@/components/ui";
 
 const QUICK_ACTIONS = [
   {
     href: "/tutor",
-    mark: "AI",
+    icon: Sparkles,
     title: "Ask the tutor",
     body: "Concept questions, assignment hints, debugging, and code review.",
   },
   {
     href: "/courses",
-    mark: "QZ",
+    icon: ListChecks,
     title: "Practice a quiz",
     body: "Generate questions from course materials and review weak spots.",
   },
   {
     href: "/code-review",
-    mark: "RV",
+    icon: Code,
     title: "Review my code",
     body: "Catch bugs and edge cases before you submit.",
   },
@@ -268,7 +269,9 @@ export default async function DashboardPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         {QUICK_ACTIONS.map((action) => (
           <Link key={action.href} href={action.href} className="card-interactive block">
-            <span className="icon-mark bg-brand-600">{action.mark}</span>
+            <span className="icon-mark bg-brand-600">
+              <action.icon size={16} strokeWidth={2} aria-hidden="true" />
+            </span>
             <p className="mt-4 font-display font-semibold text-ink">{action.title}</p>
             <p className="mt-1 text-sm font-medium leading-relaxed text-slate-500">{action.body}</p>
           </Link>

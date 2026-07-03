@@ -2,6 +2,7 @@
 
 // A workspace: members, shared task board, and group chat.
 import { use, useCallback, useEffect, useRef, useState } from "react";
+import { Users } from "lucide-react";
 import { api, errorMessage } from "@/lib/trpc";
 import { PageHeader, WorkspaceTypeBadge } from "@/components/ui";
 import {
@@ -53,7 +54,9 @@ export default function WorkspacePage({ params }: { params: Promise<{ workspaceI
   if (error && !workspace) {
     return (
       <div className="card mx-auto mt-12 max-w-md text-center">
-        <div className="icon-mark mx-auto bg-brand-600">WS</div>
+        <div className="icon-mark mx-auto bg-brand-600">
+          <Users size={16} strokeWidth={2} aria-hidden="true" />
+        </div>
         <p className="mt-4 font-display text-lg font-semibold text-ink">
           {error === NEEDS_JOIN ? "You are not in this workspace yet" : "Could not open this workspace"}
         </p>

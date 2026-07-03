@@ -1,17 +1,49 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { TIER_LABELS } from "@coursemind/core";
+import {
+  BookOpen,
+  Bug,
+  ClipboardList,
+  Code,
+  FileText,
+  FolderKanban,
+  ListChecks,
+  PencilLine,
+  Sparkles,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+
+/**
+ * The Hyntor mark: two pillars (two students) with a sheet passing between
+ * them (the shared material). Reads as an "H" at any size.
+ */
+export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id="hyntor-mark-g" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0a84ff" />
+          <stop offset="1" stopColor="#005bb8" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" rx="13" fill="url(#hyntor-mark-g)" />
+      <rect x="11" y="10" width="7" height="28" rx="3.5" fill="#ffffff" />
+      <rect x="30" y="10" width="7" height="28" rx="3.5" fill="#ffffff" />
+      <rect x="14.5" y="20.5" width="19" height="7" rx="2.5" fill="#a8d4ff" transform="rotate(-8 24 24)" />
+    </svg>
+  );
+}
 
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-2 font-display text-xl font-semibold tracking-tight ${
+      className={`inline-flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight ${
         dark ? "text-white" : "text-ink"
       }`}
     >
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 text-sm font-semibold text-white shadow-sm">
-        H
-      </span>
+      <LogoMark className="h-8 w-8 drop-shadow-sm" />
       Hyntor
     </span>
   );
@@ -38,70 +70,73 @@ export function TierBadge({ tier }: { tier: number }) {
   );
 }
 
-export const MODE_META: Record<string, { label: string; mark: string; blurb: string }> = {
+export const MODE_META: Record<string, { label: string; icon: LucideIcon; blurb: string }> = {
   CONCEPT: {
     label: "Learn a concept",
-    mark: "AI",
+    icon: Sparkles,
     blurb: "Full, generous explanations of anything in your course.",
   },
   ASSIGNMENT_HELP: {
     label: "Assignment help",
-    mark: "HW",
+    icon: PencilLine,
     blurb: "Tiered hints that guide you to your own answer - never hand it over.",
   },
   CODE_REVIEW: {
     label: "Code review",
-    mark: "CR",
+    icon: Code,
     blurb: "Paste homework code before submitting - get pointed questions, not rewrites.",
   },
   DEBUG: {
     label: "Debug with me",
-    mark: "DBG",
+    icon: Bug,
     blurb: "Step-by-step Socratic debugging of your code.",
   },
 };
 
 export function ModeBadge({ mode }: { mode: string }) {
   const meta = MODE_META[mode];
+  const Icon = meta?.icon ?? Sparkles;
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-100">
-      <span className="rounded bg-white px-1 font-semibold text-brand-600">{meta?.mark}</span>
+      <Icon size={12} strokeWidth={2.2} aria-hidden="true" />
       {meta?.label ?? mode}
     </span>
   );
 }
 
-export const WORKSPACE_TYPE_META: Record<string, { label: string; mark: string }> = {
-  STUDY_GROUP: { label: "Study group", mark: "SG" },
-  PROJECT: { label: "Project", mark: "PR" },
+export const WORKSPACE_TYPE_META: Record<string, { label: string; icon: LucideIcon }> = {
+  STUDY_GROUP: { label: "Study group", icon: Users },
+  PROJECT: { label: "Project", icon: FolderKanban },
 };
 
 export function WorkspaceTypeBadge({ type }: { type: string }) {
-  const meta = WORKSPACE_TYPE_META[type] ?? { label: type, mark: "SG" };
+  const meta = WORKSPACE_TYPE_META[type] ?? { label: type, icon: Users };
+  const Icon = meta.icon;
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-brand-100">
-      <span className="rounded bg-white px-1 font-semibold text-brand-600">{meta.mark}</span>
+      <Icon size={12} strokeWidth={2.2} aria-hidden="true" />
       {meta.label}
     </span>
   );
 }
 
-export const CONTEXT_TYPE_META: Record<string, { label: string; mark: string }> = {
-  COURSE: { label: "Course", mark: "CO" },
-  QUIZ: { label: "Quiz", mark: "QZ" },
-  MATERIAL: { label: "Material", mark: "MT" },
-  EXAM: { label: "Exam", mark: "EX" },
+export const CONTEXT_TYPE_META: Record<string, { label: string; icon: LucideIcon }> = {
+  COURSE: { label: "Course", icon: BookOpen },
+  QUIZ: { label: "Quiz", icon: ListChecks },
+  MATERIAL: { label: "Material", icon: FileText },
+  EXAM: { label: "Exam", icon: ClipboardList },
 };
 
 export function ContextTypeBadge({ type }: { type: string }) {
-  const meta = CONTEXT_TYPE_META[type] ?? { label: type, mark: "CH" };
+  const meta = CONTEXT_TYPE_META[type] ?? { label: type, icon: BookOpen };
+  const Icon = meta.icon;
   const style =
     type === "EXAM"
       ? "bg-amber-50 text-amber-700 ring-amber-100"
       : "bg-slate-100 text-slate-600 ring-slate-200";
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${style}`}>
-      <span className="rounded bg-white/80 px-1">{meta.mark}</span>
+      <Icon size={12} strokeWidth={2.2} aria-hidden="true" />
       {meta.label}
     </span>
   );
