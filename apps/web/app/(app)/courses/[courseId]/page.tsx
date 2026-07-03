@@ -34,6 +34,9 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
             <Link href={`/tutor?courseId=${course.id}`} className="btn-secondary">
               Ask the tutor
             </Link>
+            <Link href={`/visualizer?courseId=${course.id}`} className="btn-secondary">
+              Visualize
+            </Link>
             <Link href={`/courses/${course.id}/upload`} className="btn-primary">
               Upload material
             </Link>

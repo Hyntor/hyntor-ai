@@ -344,6 +344,42 @@ Use exactly this object shape:
 ]`;
 }
 
+// ------------------------------------------------------------
+// Phase 4: concept visualizer
+// ------------------------------------------------------------
+
+/** Concept map: a small graph of the ideas around ONE concept, grounded in
+ *  the class's materials. Rendered as an SVG map in the web app. */
+export function buildConceptMapPrompt(opts: {
+  concept: string;
+  courseTitle: string;
+  materials: GroundingMaterial[];
+}): string {
+  return `You are building a CONCEPT MAP to help a university student in "${opts.courseTitle}" visually understand one concept: "${opts.concept}". A concept map is a small graph: the concept in the middle, connected to the ideas that make it click.
+
+${GROUNDING_RULES}
+
+${formatMaterials(opts.materials)}
+
+Map-building rules:
+- EXACTLY ONE node with kind "core": the concept itself, with a one-sentence plain-language summary.
+- 6 to 11 more nodes total, chosen from: prerequisites and related ideas (kind "concept"), concrete examples or applications (kind "example"), common mistakes or misconceptions (kind "pitfall"), and one way to practice it (kind "practice").
+- Every node needs a label (a few words) and a one-sentence summary a student actually learns from. When a node comes straight from a class material, name the material in the summary ("your Lecture 9 notes derive this").
+- Edges connect related nodes with a SHORT relationship label (1-3 words): "requires", "special case of", "contrast with", "leads to", "watch out". Every node must be reachable from the core node. Prefer meaningful cross-links between non-core nodes over a plain star shape.
+- This is a learning aid, not an answer sheet: if the concept is clearly a graded assignment question, map the underlying ideas, never the specific solution.
+
+Respond with ONLY this JSON object, no prose:
+{
+  "summary": "2-3 sentence plain-language overview of the concept",
+  "nodes": [
+    { "id": "n1", "label": "short label", "summary": "one useful sentence", "kind": "core" | "concept" | "example" | "pitfall" | "practice" }
+  ],
+  "edges": [
+    { "from": "n1", "to": "n2", "label": "requires" }
+  ]
+}`;
+}
+
 export function buildGradingPrompt(opts: {
   question: { prompt: string; sampleAnswer?: string; type: string };
   studentResponse: string;

@@ -14,6 +14,7 @@ const NAV = [
   { href: "/tutor", label: "AI Tutor", mark: "AI" },
   { href: "/code-review", label: "Code Review", mark: "RV" },
   { href: "/sandbox", label: "Sandbox", mark: "SB" },
+  { href: "/visualizer", label: "Visualizer", mark: "VZ" },
   { href: "/leaderboard", label: "Leaderboard", mark: "LB" },
 ];
 

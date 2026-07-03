@@ -1,5 +1,4 @@
 // The app router - the single API surface consumed by web AND mobile.
-// TODO Phase 4: code sandbox, concept visualizer
 import { router } from "./trpc";
 import { userRouter } from "./routers/user";
 import { courseRouter } from "./routers/course";
@@ -13,6 +12,7 @@ import { flashcardRouter } from "./routers/flashcard";
 import { leaderboardRouter } from "./routers/leaderboard";
 import { annotationRouter } from "./routers/annotation";
 import { courseChatRouter } from "./routers/courseChat";
+import { visualizerRouter } from "./routers/visualizer";
 
 export const appRouter = router({
   user: userRouter,
@@ -27,6 +27,7 @@ export const appRouter = router({
   leaderboard: leaderboardRouter,
   annotation: annotationRouter,
   courseChat: courseChatRouter,
+  visualizer: visualizerRouter,
 });
 
 export type AppRouter = typeof appRouter;
