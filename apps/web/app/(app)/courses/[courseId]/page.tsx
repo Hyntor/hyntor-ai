@@ -19,18 +19,6 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         }`}
         action={
           <div className="flex flex-wrap gap-3">
-            <Link href={`/courses/${course.id}/chat`} className="btn-secondary">
-              Group chat
-            </Link>
-            <Link href={`/courses/${course.id}/workspaces`} className="btn-secondary">
-              Workspaces
-            </Link>
-            <Link href={`/courses/${course.id}/discussions`} className="btn-secondary">
-              Discussions
-            </Link>
-            <Link href={`/courses/${course.id}/study`} className="btn-secondary">
-              Smart study
-            </Link>
             <Link href={`/tutor?courseId=${course.id}`} className="btn-secondary">
               Ask the tutor
             </Link>

@@ -835,3 +835,25 @@ Summary:
 
 Files: packages/api/src/auth.ts, packages/api/src/routers/user.ts.
 Checks: typecheck clean, next build clean, browser-verified via real signup form.
+
+### 2026-07-03 - Claude Code - UI polish: dark auth shell, active nav states, course tabs
+
+Summary (user: "login page and web pages suck - keep it cool, consistent, easy to navigate"):
+- **Auth shell redesigned** (apps/web/app/(auth)/layout.tsx): dark #060a14 surface matching the
+  landing (glow orbs + grid + shimmer headline + 4 icon point-chips + (c) line); the form sits
+  on a white rounded-2xl card so all existing light .input/.btn styles work unchanged. Demo
+  credentials line now renders in NODE_ENV=development ONLY (was leaking on prod).
+- **Sidebar active states**: nav extracted to components/SidebarNav.tsx (client, usePathname);
+  active route gets brand-tinted row + brand-600 icon chip + aria-current. App layout stays a
+  server component.
+- **Course tab bar**: new components/CourseTabs.tsx + apps/web/app/(app)/courses/[courseId]/
+  layout.tsx - persistent segmented tabs (Overview / Group chat / Discussions / Workspaces /
+  Smart study / Upload) on every course sub-page; zero data fetching. Course overview header
+  slimmed to actions only (Ask the tutor / Visualize / Upload material) since tabs handle
+  navigation now.
+
+Checks: typecheck clean, next build clean, browser-verified via DOM inspection (dark login bg
+rgb(6,10,20), point chips, Google button, dev-creds gating; sidebar aria-current follows
+route; course tabs render on /chat with correct active tab; clicking Discussions tab navigates
++ both nav levels update; zero console errors). NOTE: preview_screenshot tool was timing out
+this session (renderer issue, not the app) - verification done via preview_eval/inspect.

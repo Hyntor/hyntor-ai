@@ -4,28 +4,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import {
-  Code,
-  GraduationCap,
-  LayoutDashboard,
-  Network,
-  Sparkles,
-  Terminal,
-  Trophy,
-} from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { serverApi } from "@/lib/server-api";
 import { Logo } from "@/components/ui";
-
-const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/courses", label: "Courses", icon: GraduationCap },
-  { href: "/tutor", label: "AI Tutor", icon: Sparkles },
-  { href: "/code-review", label: "Code Review", icon: Code },
-  { href: "/sandbox", label: "Sandbox", icon: Terminal },
-  { href: "/visualizer", label: "Visualizer", icon: Network },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-];
+import { SidebarNav } from "@/components/SidebarNav";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -47,16 +29,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <Link href="/dashboard" className="px-2">
           <Logo />
         </Link>
-        <nav className="mt-4 grid grid-cols-2 gap-2 pb-1 sm:flex sm:gap-1 sm:overflow-x-auto lg:mt-8 lg:flex-1 lg:flex-col lg:space-y-1 lg:overflow-visible lg:pb-0">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="rail-link">
-              <span className="grid h-7 w-7 place-items-center rounded-md bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                <item.icon size={15} strokeWidth={2} aria-hidden="true" />
-              </span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <SidebarNav />
         <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-white/70 p-3 shadow-sm backdrop-blur-xl sm:grid-cols-[auto_1fr_auto] sm:items-center lg:mt-0 lg:block lg:space-y-3">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <span
