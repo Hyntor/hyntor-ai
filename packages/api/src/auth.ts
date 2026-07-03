@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@coursemind/db";
 import { EMAIL_CODE_LENGTH, EMAIL_CODE_TTL_MINUTES } from "@coursemind/core";
+import { lookupUniversityName } from "./universities";
 
 const FREE_MAIL_DOMAINS = new Set([
   "gmail.com",
@@ -86,10 +87,15 @@ const PERSONAL_SPACE_NAME = "Independent learners";
 async function resolveUniversityId(normalizedEmail: string, domain: string): Promise<string> {
   const personal = isPersonalEmailDomain(domain);
   const key = personal ? `personal:${normalizedEmail}` : domain;
-  const name = personal ? PERSONAL_SPACE_NAME : prettifyDomain(domain);
+  // Known school domains get their REAL name ("stanford.edu" -> "Stanford
+  // University"); unknown ones keep the readable fallback label.
+  const known = personal ? null : lookupUniversityName(domain);
+  const name = personal ? PERSONAL_SPACE_NAME : (known ?? prettifyDomain(domain));
   const university = await prisma.university.upsert({
     where: { emailDomain: key },
-    update: {},
+    // Self-heal rows created before the school was in the dataset - but only
+    // with authoritative names, never overwriting hand-named spaces.
+    update: known ? { name: known } : {},
     create: { name, emailDomain: key },
   });
   return university.id;
