@@ -3,19 +3,27 @@
 // happens in @coursemind/api's createMaterialFromFile, so mobile can hit
 // this same endpoint with its Bearer token and identical behavior.
 //
-// Dev storage: files land in apps/web/uploads/ (gitignored).
-// TODO: swap to object storage (S3/R2) for production file uploads.
-// On serverless hosts (Vercel) the filesystem is ephemeral/read-only, so
-// disk uploads can't persist - we detect that and steer the student to the
-// paste-text path instead of failing with a confusing disk error.
+// Storage, in order of preference:
+//  1. Vercel Blob when BLOB_READ_WRITE_TOKEN is set (production) - the
+//     original file gets a public URL students can open from the material
+//     page. Enable it from the Vercel dashboard: Storage -> Create -> Blob.
+//  2. Local disk in dev: files land in apps/web/uploads/ (gitignored).
+//  3. Hosted WITHOUT a Blob store: the filesystem is ephemeral, so we
+//     steer the student to the paste-text path instead of failing with a
+//     confusing disk error.
 import { NextResponse } from "next/server";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { put } from "@vercel/blob";
 import { createMaterialFromFile, verifyMobileToken } from "@coursemind/api";
 import { auth } from "@/auth";
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024; // 25 MB
+
+function isBlobConfigured(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
 
 export async function POST(req: Request) {
   // Resolve the caller from either transport (web session or mobile JWT).
@@ -38,10 +46,8 @@ export async function POST(req: Request) {
   if (!(file instanceof File) || typeof courseId !== "string") {
     return NextResponse.json({ error: "Missing file or courseId." }, { status: 400 });
   }
-  // Serverless filesystems are ephemeral - a saved file wouldn't survive the
-  // request. Until object storage is wired up, guide the student to paste the
-  // text instead (which works everywhere and is what the AI tutor reads).
-  if (process.env.VERCEL) {
+  // Hosted with no object storage: a disk write wouldn't survive the request.
+  if (process.env.VERCEL && !isBlobConfigured()) {
     return NextResponse.json(
       {
         error:
@@ -60,9 +66,21 @@ export async function POST(req: Request) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const storedName = `${crypto.randomBytes(8).toString("hex")}-${safeName}`;
-  const uploadsDir = path.join(process.cwd(), "uploads");
-  await mkdir(uploadsDir, { recursive: true });
-  await writeFile(path.join(uploadsDir, storedName), buffer);
+
+  let fileUrl: string;
+  if (isBlobConfigured()) {
+    // Object storage: survives deploys, and the URL opens in a browser.
+    const blob = await put(`materials/${storedName}`, buffer, {
+      access: "public",
+      contentType: file.type || undefined,
+    });
+    fileUrl = blob.url;
+  } else {
+    const uploadsDir = path.join(process.cwd(), "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+    await writeFile(path.join(uploadsDir, storedName), buffer);
+    fileUrl = `uploads/${storedName}`;
+  }
 
   try {
     const result = await createMaterialFromFile({
@@ -71,7 +89,7 @@ export async function POST(req: Request) {
       title: typeof title === "string" && title.trim() ? title.trim() : file.name,
       filename: file.name,
       buffer,
-      fileUrl: `uploads/${storedName}`,
+      fileUrl,
     });
     return NextResponse.json(result);
   } catch (err) {

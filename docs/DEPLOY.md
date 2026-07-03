@@ -150,13 +150,22 @@ public launch). Google sign-in needs no code (Google already verifies the email)
 
 ---
 
-## Known limitations on the hosted site
+## File uploads (one click to enable)
 
-- **File uploads are disabled in production.** Serverless hosts have a
-  temporary filesystem, so an uploaded file wouldn't survive the request. The
-  app detects this and asks you to use **Paste text** instead — which is exactly
-  what the AI tutor reads, so nothing is lost. Real file uploads need cloud
-  storage (S3 / Cloudflare R2); that's a good follow-up, not a launch blocker.
+By default the hosted site has **no place to keep uploaded files** (serverless
+filesystems are temporary), so the upload page steers students to **Paste
+text** — which is exactly what the AI tutor reads, so nothing is lost.
+
+To enable real file uploads (PDFs, slides, docs):
+
+1. In Vercel: **Project → Storage → Create Database → Blob** and connect it to
+   the project. Vercel adds the `BLOB_READ_WRITE_TOKEN` variable automatically.
+2. **Redeploy.** That's it — uploads now go to Vercel Blob, text is extracted
+   as usual, and each material page gets an **Open original file** link.
+
+Blob has a free tier (a few GB) and needs no code changes — the app detects
+the token and switches storage automatically. Local development keeps writing
+to `apps/web/uploads/` either way.
 
 ---
 

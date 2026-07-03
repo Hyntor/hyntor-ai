@@ -43,6 +43,17 @@ export default async function MaterialPage({
         <Link href={`/courses/${material.course.id}`} className="text-sm font-bold text-brand-600 hover:text-brand-700">
           Back to {material.course.code}
         </Link>
+        {material.fileUrl.startsWith("http") && (
+          // Original file lives in object storage (Vercel Blob) - open it.
+          <a
+            href={material.fileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-bold text-brand-600 hover:text-brand-700"
+          >
+            Open original file
+          </a>
+        )}
       </p>
 
       <div className="card">
