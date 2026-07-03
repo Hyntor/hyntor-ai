@@ -2,10 +2,18 @@
 
 > **Don't just get the answer. Actually learn it.**
 
-Hyntor is a responsible-AI study platform. The AI is a **Socratic tutor, not an answer
-vending machine**: it explains concepts generously, grounds every answer in *your* course's
-uploaded materials, and on graded work it guides you with escalating hints instead of handing
-over solutions. Web app + native mobile app, one shared API.
+Hyntor turns a class's **shared course library** into an AI study partner. Each course gets
+one page, created once - students pool the materials that actually matter (lecture notes,
+slides, homework, **real past exams**), upvotes float the good stuff to the top, and every
+new semester joins the same course and **inherits the whole library on day one**. Around it:
+a live class group chat, discussion boards, shared annotations, and study tools generated
+from what the class shared.
+
+The AI is a **Socratic tutor, not an answer vending machine**: it reads everything the class
+has shared, explains concepts generously, and on graded work guides you with escalating
+*hints* instead of handing over solutions (the tier system in `packages/core/src/prompts.ts`).
+The bigger the library grows, the smarter it gets - that's the Pro feature. Web app + native
+mobile app, one shared API.
 
 | | |
 |---|---|

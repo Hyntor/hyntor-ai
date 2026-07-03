@@ -1,8 +1,19 @@
 // Landing page: public product pitch. Dark, animated marketing surface -
-// the app itself stays light. Animated pieces are client components in
-// components/landing/; everything else renders on the server.
+// the app itself stays light. The hero leads with the AI study partner
+// ("Don't just get the answer. Actually learn it."); the middle of the page
+// markets the SHARED CLASS LIBRARY hard (real materials, real past exams,
+// inherited semester after semester) - that library is also exactly what
+// makes the Pro AI smart. Animated pieces are client components in
+// components/landing/.
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  ArrowBigUp,
+  ClipboardList,
+  FileText,
+  Presentation,
+  Sparkles,
+} from "lucide-react";
 import { auth } from "@/auth";
 import { Logo } from "@/components/ui";
 import { LandingNav } from "@/components/landing/LandingNav";
@@ -41,6 +52,13 @@ const STEPS = [
     title: "Earn deeper help",
     body: "On graded work the AI starts with a nudge and escalates only as you engage - hint, guiding question, analogous example, walkthrough. The final answer stays yours.",
   },
+];
+
+const SEMESTERS = [
+  { label: "Fall 2024", count: 12, height: "22%" },
+  { label: "Spring 2025", count: 43, height: "52%" },
+  { label: "Fall 2025", count: 84, height: "100%" },
+  { label: "You · Spring 2026", count: 84, height: "100%", you: true },
 ];
 
 const STATS = [
@@ -143,7 +161,13 @@ export default async function LandingPage() {
           <p className="pb-4 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
             Built for every class you&apos;re taking
           </p>
-          <div className="overflow-hidden" style={{ maskImage: "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)" }}>
+          <div
+            className="overflow-hidden"
+            style={{
+              maskImage: "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)",
+              WebkitMaskImage: "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)",
+            }}
+          >
             <div className="landing-marquee gap-4 pr-4">
               {[...MARQUEE, ...MARQUEE].map((c, i) => (
                 <span
@@ -181,10 +205,83 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* ================= The course library (semester legacy) ================= */}
+      <section id="legacy" className="relative scroll-mt-20 border-t border-white/5">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div
+            className="landing-orb left-[12%] top-[8rem] h-[20rem] w-[20rem]"
+            style={{ background: "rgba(10,132,255,0.14)", animationDelay: "-8s" }}
+          />
+        </div>
+        <div className="relative mx-auto max-w-6xl px-6 py-24">
+          <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <Reveal>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-400">The course library</p>
+              <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+                Materials outlive
+                <br />
+                the semester.
+              </h2>
+              <p className="mt-5 max-w-lg text-base font-medium leading-relaxed text-slate-400">
+                Your course gets created once - every semester, new students join the{" "}
+                <span className="text-slate-200">same page</span> and inherit the whole library on day
+                one: last year&apos;s midterm, the annotated slides, the study guide that saved finals
+                week. Elsewhere that knowledge dies in a group chat. Here it{" "}
+                <span className="text-slate-200">compounds</span>.
+              </p>
+              <p className="mt-4 max-w-lg text-base font-medium leading-relaxed text-slate-400">
+                And the bigger the library grows, the smarter the AI gets - it reads everything your
+                class has ever shared.
+              </p>
+            </Reveal>
+            <Reveal delay={150}>
+              <div className="landing-tile p-8">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  PSYC 101 · library size by semester
+                </p>
+                <div className="mt-6 flex h-56 gap-4">
+                  {SEMESTERS.map((s) => (
+                    <div key={s.label} className="flex flex-1 flex-col items-center gap-3">
+                      <span className={`font-display text-lg font-bold ${s.you ? "text-brand-300" : "text-white"}`}>
+                        {s.count}
+                        {s.you && <span className="text-brand-400">+</span>}
+                      </span>
+                      <div className="flex w-full flex-1 items-end">
+                        <div
+                          className={`w-full rounded-t-lg transition-all duration-700 ${
+                            s.you
+                              ? "bg-gradient-to-t from-brand-600 to-brand-400 shadow-[0_0_30px_-4px_rgba(10,132,255,0.6)]"
+                              : "bg-white/15"
+                          }`}
+                          style={{ height: s.height }}
+                        />
+                      </div>
+                      <span
+                        className={`text-center text-[11px] font-bold ${
+                          s.you ? "text-brand-300" : "text-slate-500"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-5 text-center text-xs font-semibold text-slate-500">
+                  You start with everything. You leave it bigger.
+                </p>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* ================= Features bento ================= */}
       <section id="features" className="relative scroll-mt-20 border-t border-white/5">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="landing-orb right-[10%] top-[10rem] h-[20rem] w-[20rem]" style={{ background: "rgba(10,132,255,0.14)", animationDelay: "-4s" }} />
+          <div
+            className="landing-orb right-[10%] top-[10rem] h-[20rem] w-[20rem]"
+            style={{ background: "rgba(10,132,255,0.14)", animationDelay: "-4s" }}
+          />
         </div>
         <div className="relative mx-auto max-w-6xl px-6 py-24">
           <Reveal>
@@ -195,83 +292,91 @@ export default async function LandingPage() {
           </Reveal>
 
           <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {/* Grounded tutor - large tile */}
+            {/* Shared library - large tile */}
             <Reveal className="lg:col-span-2">
               <div className="landing-tile h-full p-7">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="max-w-sm">
-                    <h3 className="font-display text-xl font-semibold text-white">A tutor grounded in your course</h3>
+                    <h3 className="font-display text-xl font-semibold text-white">One shared class library</h3>
                     <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">
-                      Answers cite your actual materials - &quot;your Lecture 9 notes cover this&quot; - and flag
-                      anything beyond what your professor has shared.
+                      Slides, notes, homework, study guides - uploaded once, useful to everyone
+                      enrolled, this semester and every one after. Upvotes rank what the class actually
+                      found helpful, and it&apos;s all searchable and readable in the browser.
                     </p>
                   </div>
                   <div className="min-w-[15rem] flex-1 space-y-2">
-                    <div className="rounded-lg border border-white/10 bg-white/[0.05] px-3.5 py-2.5 text-xs font-medium text-slate-300">
-                      📄 Week 6 - Master Theorem.pdf
-                    </div>
-                    <div className="rounded-lg border border-white/10 bg-white/[0.05] px-3.5 py-2.5 text-xs font-medium text-slate-300">
-                      📊 Lecture 9 - Hash Tables.pptx
-                    </div>
-                    <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 px-3.5 py-2.5 text-xs font-semibold text-brand-300">
-                      ✓ Grounding the tutor with 14 class materials
-                    </div>
+                    {[
+                      { icon: ClipboardList, name: "Final Exam (2024) - walkthrough", votes: 56 },
+                      { icon: FileText, name: "Lecture 7 - Memory notes", votes: 28 },
+                      { icon: Presentation, name: "Week 9 slides - annotated", votes: 23 },
+                    ].map((f) => (
+                      <div
+                        key={f.name}
+                        className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.05] px-3.5 py-2.5 text-xs font-medium text-slate-300"
+                      >
+                        <f.icon size={14} className="shrink-0 text-brand-300" aria-hidden="true" />
+                        <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                        <span className="inline-flex items-center gap-0.5 font-bold text-slate-400">
+                          <ArrowBigUp size={12} aria-hidden="true" />
+                          {f.votes}
+                        </span>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Past exams */}
+            <Reveal delay={100}>
+              <div className="landing-tile h-full p-7">
+                <h3 className="font-display text-xl font-semibold text-white">Real past exams</h3>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">
+                  The most valuable thing a class can pass down. Practice on the exams your course
+                  actually gave - shared by the students who took them.
+                </p>
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3.5 py-2.5">
+                  <ClipboardList size={15} className="shrink-0 text-amber-300" aria-hidden="true" />
+                  <span className="text-xs font-semibold text-amber-200">
+                    Midterm 2 (2025) · shared 3 days before yours
+                  </span>
                 </div>
               </div>
             </Reveal>
 
             {/* Group chat */}
-            <Reveal delay={100}>
+            <Reveal>
               <div className="landing-tile h-full p-7">
                 <h3 className="font-display text-xl font-semibold text-white">Live class group chat</h3>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">
                   One chat per course. Share, ask, vent before the midterm. On Pro, the AI joins in -
-                  reading the chat and your materials.
+                  reading the chat and your class&apos;s library.
                 </p>
                 <div className="mt-4 space-y-2">
                   <div className="w-fit rounded-xl rounded-bl-sm border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-slate-300">
                     anyone get #4 on the pset? 😩
                   </div>
-                  <div className="ml-auto w-fit rounded-xl rounded-br-sm bg-brand-600/80 px-3 py-1.5 text-xs font-medium text-white">
-                    @Hyntor AI where do we even start?
+                  <div className="ml-auto flex w-fit items-center gap-1.5 rounded-xl rounded-br-sm bg-brand-600/80 px-3 py-1.5 text-xs font-medium text-white">
+                    <FileText size={12} aria-hidden="true" />
+                    check the PS3 guide in the library ↑
                   </div>
                 </div>
               </div>
             </Reveal>
 
-            {/* Mock exams */}
-            <Reveal>
-              <div className="landing-tile h-full p-7">
-                <h3 className="font-display text-xl font-semibold text-white">Mock exams & quizzes</h3>
-                <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">
-                  Generated from your class materials, weighted the way your professor emphasizes - with a
-                  real timer for exam-day nerves.
-                </p>
-                <div className="mt-4 flex items-center gap-3">
-                  <span className="rounded-lg bg-white/10 px-3 py-1.5 font-mono text-sm font-bold text-white">42:17</span>
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full w-2/3 rounded-full bg-brand-500" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-400">12/18</span>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Spaced repetition */}
+            {/* Grounded tutor */}
             <Reveal delay={80}>
               <div className="landing-tile h-full p-7">
-                <h3 className="font-display text-xl font-semibold text-white">Flashcards that schedule themselves</h3>
+                <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-white">
+                  <Sparkles size={18} className="text-brand-300" aria-hidden="true" />
+                  A tutor grounded in your course
+                </h3>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">
-                  SM-2 spaced repetition decides what you review and when. Rate honestly; the algorithm
-                  does the planning.
+                  Answers cite your actual materials - &quot;your Lecture 9 notes cover this&quot; - and
+                  flag anything beyond what your professor has shared.
                 </p>
-                <div className="mt-4 flex gap-2">
-                  {["Again · 10m", "Hard · 1d", "Good · 6d", "Easy · 14d"].map((r) => (
-                    <span key={r} className="rounded-lg border border-white/10 bg-white/[0.05] px-2.5 py-1.5 text-[11px] font-bold text-slate-300">
-                      {r}
-                    </span>
-                  ))}
+                <div className="mt-4 rounded-lg border border-brand-500/30 bg-brand-500/10 px-3.5 py-2.5 text-xs font-semibold text-brand-300">
+                  ✓ Grounding the tutor with 14 class materials
                 </div>
               </div>
             </Reveal>
@@ -281,8 +386,8 @@ export default async function LandingPage() {
               <div className="landing-tile h-full p-7">
                 <h3 className="font-display text-xl font-semibold text-white">Concept visualizer</h3>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">
-                  Name any concept - get a map of the ideas around it: prerequisites, examples, pitfalls,
-                  and how to practice.
+                  Name any concept - get a map of the ideas around it: prerequisites, examples,
+                  pitfalls, and how to practice.
                 </p>
                 <svg viewBox="0 0 220 90" className="mt-4 w-full" aria-hidden="true">
                   <line x1="110" y1="45" x2="35" y2="20" stroke="rgba(255,255,255,0.15)" />
@@ -367,9 +472,7 @@ export default async function LandingPage() {
           {STATS.map((s, i) => (
             <Reveal key={s.value} delay={i * 90}>
               <div>
-                <p className="font-display text-5xl font-bold text-white">
-                  {s.value}
-                </p>
+                <p className="font-display text-5xl font-bold text-white">{s.value}</p>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-slate-400">{s.label}</p>
               </div>
             </Reveal>
@@ -395,8 +498,8 @@ export default async function LandingPage() {
                 <ul className="mt-6 space-y-3 text-sm font-medium text-slate-300">
                   {[
                     "Shared course library - notes, slides, past exams",
+                    "Everything from past semesters, inherited on day one",
                     "Live class group chat & study-group workspaces",
-                    "Discussion boards & shared annotations",
                     "Quizzes, flashcards & leaderboards",
                   ].map((f) => (
                     <li key={f} className="flex gap-2.5">
@@ -404,7 +507,10 @@ export default async function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className="mt-8 block rounded-xl border border-white/15 bg-white/5 py-3 text-center font-semibold text-white transition hover:bg-white/10">
+                <Link
+                  href="/signup"
+                  className="mt-8 block rounded-xl border border-white/15 bg-white/5 py-3 text-center font-semibold text-white transition hover:bg-white/10"
+                >
                   Join free
                 </Link>
               </div>
@@ -418,12 +524,14 @@ export default async function LandingPage() {
                 <p className="mt-1 font-display text-4xl font-bold text-white">
                   $6<span className="text-lg font-semibold text-slate-400">/mo</span>
                 </p>
-                <p className="mt-3 text-sm font-medium text-slate-400">The AI, everywhere your class studies.</p>
+                <p className="mt-3 text-sm font-medium text-slate-400">
+                  Your whole class, one brain - an AI that has read everything your class ever shared.
+                </p>
                 <ul className="mt-6 space-y-3 text-sm font-medium text-slate-300">
                   {[
                     "Everything in Free",
                     "AI assistant inside the class group chat",
-                    "Grounded in your course's shared materials",
+                    "Reads every note, lecture & past exam in the library",
                     "Hint-tier protected - helps you learn, never cheats",
                   ].map((f) => (
                     <li key={f} className="flex gap-2.5">
@@ -431,7 +539,10 @@ export default async function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className="mt-8 block rounded-xl bg-brand-500 py-3 text-center font-bold text-white transition hover:bg-brand-600">
+                <Link
+                  href="/signup"
+                  className="mt-8 block rounded-xl bg-brand-500 py-3 text-center font-bold text-white transition hover:bg-brand-600"
+                >
                   Start with Pro
                 </Link>
               </div>
@@ -443,7 +554,10 @@ export default async function LandingPage() {
       {/* ================= Final CTA ================= */}
       <section className="relative border-t border-white/5">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="landing-orb left-[30%] top-[-4rem] h-[24rem] w-[30rem]" style={{ background: "rgba(10,132,255,0.2)" }} />
+          <div
+            className="landing-orb left-[30%] top-[-4rem] h-[24rem] w-[30rem]"
+            style={{ background: "rgba(10,132,255,0.2)" }}
+          />
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-28 text-center">
           <Reveal>
@@ -468,18 +582,23 @@ export default async function LandingPage() {
 
       {/* ================= Footer ================= */}
       <footer className="border-t border-white/5">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <Logo dark />
-            <p className="mt-2 text-sm font-medium text-slate-500">
-              Don&apos;t just get the answer. Actually learn it.
-            </p>
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <Logo dark />
+              <p className="mt-2 text-sm font-medium text-slate-500">
+                Don&apos;t just get the answer. Actually learn it.
+              </p>
+            </div>
+            <div className="flex items-center gap-6 text-sm font-semibold text-slate-400">
+              <a href="#features" className="transition hover:text-white">Features</a>
+              <a href="#pricing" className="transition hover:text-white">Pricing</a>
+              <Link href="/login" className="transition hover:text-white">Log in</Link>
+              <Link href="/signup" className="transition hover:text-white">Get started</Link>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm font-semibold text-slate-400">
-            <a href="#features" className="transition hover:text-white">Features</a>
-            <a href="#pricing" className="transition hover:text-white">Pricing</a>
-            <Link href="/login" className="transition hover:text-white">Log in</Link>
-            <Link href="/signup" className="transition hover:text-white">Get started</Link>
+          <div className="mt-10 border-t border-white/5 pt-6">
+            <p className="text-xs font-medium text-slate-500">© 2026 Hyntor. All rights reserved.</p>
           </div>
         </div>
       </footer>

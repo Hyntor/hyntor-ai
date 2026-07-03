@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Hyntor - Don't just get the answer. Actually learn it.",
   description:
-    "A responsible-AI study platform: a Socratic tutor grounded in your own course materials, auto-generated practice quizzes, and pre-submit code review that makes you better - not dependent.",
+    "Hyntor turns your class's real materials - slides, notes, homework, past exams, inherited semester after semester - into an AI study partner that guides you to the answer on graded work, never past it.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

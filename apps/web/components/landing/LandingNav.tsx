@@ -8,7 +8,7 @@ import { Logo } from "@/components/ui";
 
 const LINKS = [
   { href: "#how", label: "How it works" },
-  { href: "#features", label: "Features" },
+  { href: "#legacy", label: "The library" },
   { href: "#tiers", label: "Hint tiers" },
   { href: "#pricing", label: "Pricing" },
 ];
