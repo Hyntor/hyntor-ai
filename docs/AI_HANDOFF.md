@@ -743,3 +743,40 @@ chat the button ungates to "Ask AI" and (no local API key) shows the friendly
 Notes: AI replies in chat need ANTHROPIC_API_KEY (same as all AI features) - Pro gating +
 plumbing verified, the model call reuses the proven discussion-tutor path. Existing
 per-course discussion boards + study-group (workspace) chats are unchanged and still there.
+
+### 2026-07-03 - Claude Code - Phase 4 complete + Blob uploads + new landing page
+
+Summary:
+- **Concept visualizer (final Phase 4 feature)**: `visualizer.generate` tRPC mutation maps a
+  student-named concept into a small graph (core/concept/example/pitfall/practice nodes),
+  AI-grounded in course materials via `buildConceptMapPrompt`; keyless fallback
+  (`buildFallbackConceptMap` in `packages/core/src/visualizer.ts`) returns an honest offline
+  study map. Web page `/visualizer` renders the graph as SVG (radial layout, click a node for
+  its one-liner), nav entry `VZ`, "Visualize" link on the course page. All four phases now done on web.
+- **Production file uploads**: upload route now writes to Vercel Blob when
+  `BLOB_READ_WRITE_TOKEN` is set (enable via Vercel -> Storage -> Blob; docs/DEPLOY.md updated);
+  local dev still uses apps/web/uploads/; hosted-without-blob keeps the friendly 503.
+  Material page shows "Open original file" when fileUrl is http(s). New dep: @vercel/blob.
+- **Landing page rebuilt (user request: "cluely.com-style, amazed")**: full dark marketing
+  surface (#060a14) with animated glow orbs, gradient-shimmer headline, auto-playing typewriter
+  hint-tier chat demo in the hero (components/landing/HeroDemo.tsx), fixed blur nav, course
+  marquee, scroll-reveal sections (IntersectionObserver, no animation lib), bento feature grid,
+  INTERACTIVE tier explorer (TierShowcase.tsx), stats band, Free/Pro pricing, big CTA.
+  Animations are pure CSS in globals.css with prefers-reduced-motion support. App UI stays light.
+- Cleaned stale `TODO Phase` comments (root.ts, schema.prisma isMockExam).
+
+Files touched: packages/core/src/{visualizer.ts,prompts.ts,index.ts},
+packages/api/src/routers/visualizer.ts, packages/api/src/root.ts, packages/db/prisma/schema.prisma
+(comment only), apps/web/app/(app)/visualizer/page.tsx, apps/web/app/(app)/layout.tsx,
+apps/web/app/(app)/courses/[courseId]/page.tsx, apps/web/app/(app)/materials/[materialId]/page.tsx,
+apps/web/app/api/upload/route.ts, apps/web/app/page.tsx, apps/web/components/landing/*,
+apps/web/app/globals.css, docs/DEPLOY.md, README.md.
+
+Checks run: npm run typecheck (clean), apps/web next build (clean), browser-verified: landing
+(desktop 1366px + mobile 375px, hero demo types + loops, tier explorer switches on click,
+marquee/reveals animate, zero console errors) and /visualizer (offline map generates for a
+course, node click shows detail, badge shows "AI not configured" state).
+
+Open/next: mobile parity is PAUSED by user request. Stripe: USER IS BUILDING IT THEMSELVES -
+do not implement billing; upgradeToPro/downgradeToFree remain placeholders for their work.
+Email verification still paused (RESEND_API_KEY absent). AI features await ANTHROPIC_API_KEY.

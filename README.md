@@ -158,9 +158,12 @@ Every push to `main` redeploys.
 - [done] **Phase 3 - Smart studying** (live): syllabus import/autopilot, mock exams,
   spaced repetition (SM-2 flashcards), weak-spot radar, AI study plans with a no-key
   deterministic fallback, plus a native-mobile Smart Study screen
-- [in progress] **Phase 4 - Engagement**: material upvoting (the class's quality signal,
+- [done] **Phase 4 - Engagement** (live): material upvoting (the class's quality signal,
   rewards uploaders with XP), XP/streak leaderboards (school- or course-scoped), shared
-  inline annotations on materials (highlight text to anchor a class-visible note), and a
-  safe in-browser JavaScript code sandbox are live; concept visualizer remains
+  inline annotations on materials (highlight text to anchor a class-visible note), a
+  safe in-browser JavaScript code sandbox, and the concept visualizer (AI concept maps
+  grounded in class materials, with a no-key offline study-map fallback)
 
-Search the codebase for `TODO Phase` to see exactly where each feature hooks in.
+All four planned phases are complete on web. Still open beyond the original plan:
+native-mobile parity for Phases 2/4 (the Expo app covers Phase 1 + Smart Study),
+real billing for the Pro plan, and live AI/email keys (see `docs/DEPLOY.md`).
