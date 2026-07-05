@@ -6,11 +6,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/ui";
 
+// Absolute /# anchors so the nav also works from /terms and /privacy.
 const LINKS = [
-  { href: "#how", label: "How it works" },
-  { href: "#legacy", label: "The library" },
-  { href: "#tiers", label: "Hint tiers" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#legacy", label: "The library" },
+  { href: "/#tiers", label: "Hint tiers" },
+  { href: "/#pricing", label: "Pricing" },
 ];
 
 export function LandingNav() {

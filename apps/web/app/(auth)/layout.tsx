@@ -72,7 +72,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <div className="w-full rounded-2xl border border-white/10 bg-white p-7 text-ink shadow-[0_30px_90px_-25px_rgba(10,132,255,0.5)] sm:p-8">
             {children}
           </div>
-          <p className="mt-6 text-center text-xs font-medium text-slate-500">
+          <p className="mt-5 max-w-sm text-center text-xs font-medium leading-relaxed text-slate-500">
+            By continuing you agree to Hyntor&apos;s{" "}
+            <Link href="/terms" className="font-semibold text-slate-300 transition hover:text-white">Terms of Service</Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="font-semibold text-slate-300 transition hover:text-white">Privacy Policy</Link>.
+          </p>
+          <p className="mt-3 text-center text-xs font-medium text-slate-500">
             <Link href="/" className="transition hover:text-slate-300">← Back to hyntor.vercel.app</Link>
           </p>
           {isDev && (

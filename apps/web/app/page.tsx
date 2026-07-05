@@ -590,15 +590,19 @@ export default async function LandingPage() {
                 Don&apos;t just get the answer. Actually learn it.
               </p>
             </div>
-            <div className="flex items-center gap-6 text-sm font-semibold text-slate-400">
+            <div className="flex flex-wrap items-center gap-6 text-sm font-semibold text-slate-400">
               <a href="#features" className="transition hover:text-white">Features</a>
               <a href="#pricing" className="transition hover:text-white">Pricing</a>
               <Link href="/login" className="transition hover:text-white">Log in</Link>
               <Link href="/signup" className="transition hover:text-white">Get started</Link>
             </div>
           </div>
-          <div className="mt-10 border-t border-white/5 pt-6">
+          <div className="mt-10 flex flex-col gap-3 border-t border-white/5 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-medium text-slate-500">© 2026 Hyntor. All rights reserved.</p>
+            <div className="flex items-center gap-5 text-xs font-semibold text-slate-500">
+              <Link href="/terms" className="transition hover:text-white">Terms of Service</Link>
+              <Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link>
+            </div>
           </div>
         </div>
       </footer>

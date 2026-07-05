@@ -857,3 +857,25 @@ rgb(6,10,20), point chips, Google button, dev-creds gating; sidebar aria-current
 route; course tabs render on /chat with correct active tab; clicking Discussions tab navigates
 + both nav levels update; zero console errors). NOTE: preview_screenshot tool was timing out
 this session (renderer issue, not the app) - verification done via preview_eval/inspect.
+
+### 2026-07-05 - Claude Code - Legal pages: /terms + /privacy
+
+Summary:
+- Full Terms of Service (16 sections: content ownership + course-sharing license, academic
+  integrity, acceptable use, copyright takedown, Pro billing, AI disclaimer, warranty
+  disclaimer, liability cap, termination, governing law) and Privacy Policy (14 sections:
+  data collected, essential-cookies-only, classmate visibility, AI processing via Anthropic
+  no-training note, processors list, no-sell/no-ads, retention + email-based deletion,
+  security, GDPR-style rights, children, contact).
+- New route group apps/web/app/(legal)/ - dark marketing shell + white paper card, reuses
+  LandingNav (its anchors changed to /#how etc. so they work off-landing), own footer with
+  (c) line. Typography helpers + CONTACT_EMAIL const in components/legal.tsx (currently
+  batorgilrb@gmail.com - swap there when a support address exists).
+- Landing footer now links Terms/Privacy next to the (c) line; auth card shows "By continuing
+  you agree to Terms + Privacy" (Google OAuth verification + Stripe both want these).
+- Statements were kept honest to the codebase: bcrypt hashes, session-cookie-only, no
+  training on user content (Anthropic API default), delete-by-email (no self-serve deletion
+  UI yet - future task), "prices may change with notice".
+
+Checks: typecheck clean, build clean (/terms + /privacy prerender static), browser-verified
+both pages render all sections + footer links + auth agreement line.
