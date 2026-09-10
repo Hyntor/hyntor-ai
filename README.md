@@ -1,1 +1,1 @@
-# hyntor-ai
+Edited Readme.md file
