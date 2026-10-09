@@ -1,0 +1,37 @@
+=== FICTIONAL TEST DATA - NOT A REAL HARVARD DOCUMENT ===
+This file contains invented sample data used to test retrieval-augmented generation.
+Nothing in it is real or affiliated with Harvard University.
+=========================================================
+
+INTERNAL ADVISING MEMO - HARVARD
+Document ID: HRV-2026-0114
+Last updated: 2026-01-14
+Prepared by: Office of Quantitative Programs (internal distribution only)
+
+PROGRAM: Pforzheimer Quantitative Fellowship (PQF)
+- Internal program code: PQF-441
+- Annual stipend: $47,500 plus a $3,200 computing allowance
+- Cohort size: capped at 14 fellows per year
+- Application deadline: February 19, 2026 at 11:59 PM ET
+- Faculty director: Dr. Marguerite Halloway, Sever Hall Room 214
+- Acceptance rate for the 2025 cycle: 6.8% (412 applicants, 28 interviews, 14 offers)
+
+ADMISSION REQUIREMENTS (PQF-441)
+- Minimum 3.71 cumulative GPA
+- Two semesters of proof-based linear algebra
+- A 1,500-word research statement submitted through the internal ARBOR portal
+- Note: the GRE requirement was permanently discontinued after the 2024 cycle
+
+INTERNAL LAB PLACEMENTS
+- Kestrel Lab (computational biology) - accepts 4 PQF fellows annually
+- Thornbury Group (econometrics) - accepts 5 PQF fellows annually
+- The Winslow Data Cooperative - accepts 5 PQF fellows annually
+
+HOUSING NOTES
+PQF fellows are guaranteed placement in Hadley Court, building 7. The internal
+housing rate for fellows is $1,140/month, which is subsidized at 38% relative to
+the standard graduate residence rate.
+
+CONTACT
+Program administrator: Dennis Okonjo, ext. 4-2287
+Internal escalation: pqf-admin@[internal-only]

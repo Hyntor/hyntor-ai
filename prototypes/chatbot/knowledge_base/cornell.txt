@@ -1,0 +1,38 @@
+=== FICTIONAL TEST DATA - NOT A REAL CORNELL DOCUMENT ===
+This file contains invented sample data used to test retrieval-augmented generation.
+Nothing in it is real or affiliated with Cornell University.
+=========================================================
+
+INTERNAL ADVISING MEMO - CORNELL
+Document ID: CRN-2026-0305
+Last updated: 2026-03-05
+Prepared by: Office of Field Research Programs (internal distribution only)
+
+PROGRAM: Ithaca Field Systems Scholarship (IFSS)
+- Internal program code: IFSS-1130
+- Annual stipend: $43,200 plus a $5,600 winter field allowance
+- Cohort size: capped at 9 scholars per year
+- Application deadline: January 31, 2026 at 11:59 PM ET
+- Faculty director: Dr. Anselm Boateng, Rhodes Hall Room 592
+- Acceptance rate for the 2025 cycle: 4.2% (738 applicants, 31 interviews, 9 offers)
+
+ADMISSION REQUIREMENTS (IFSS-1130)
+- Minimum 3.80 cumulative GPA
+- Documented field work experience of at least 120 hours
+- A winter-conditions safety certification completed before matriculation
+- Application submitted through the internal TRELLIS portal (note: TRELLIS replaced
+  the legacy CUFIELD system in November 2025)
+
+INTERNAL LAB PLACEMENTS
+- The Cayuga Sensor Array - accepts 3 IFSS scholars annually
+- Harrowgate Atmospheric Station - accepts 3 IFSS scholars annually
+- Northwind Ecology Collective - accepts 3 IFSS scholars annually
+
+FIELD SEASON NOTES
+IFSS scholars are required to complete a 6-week winter deployment between January and
+March. Scholars deployed to Harrowgate Atmospheric Station receive an additional
+$1,900 hardship supplement and are exempt from the spring teaching requirement.
+
+CONTACT
+Program administrator: Lucia Fernandez-Wray, ext. 5-6640
+Internal escalation: ifss-admin@[internal-only]
