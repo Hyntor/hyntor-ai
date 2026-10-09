@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+.vercel
+
+# Expo / React Native
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Production builds
+build/
+dist/
+
+# Environment — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# Database (SQLite dev database lives outside git)
+packages/db/prisma/*.db
+packages/db/prisma/*.db-journal
+
+# Generated production Prisma schema (derived from schema.prisma at build time)
+packages/db/prisma/schema.prod.prisma
+
+# Uploaded course materials (dev storage)
+apps/web/uploads/
+uploads/
+
+# Logs & misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
+.turbo
+
+.vercel
