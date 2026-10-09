@@ -1,0 +1,373 @@
+// ============================================================
+// Hyntor - full data model (all phases, built up front)
+// ============================================================
+// DEV DATABASE: SQLite (zero-install, file-based - see DATABASE_URL).
+// PRODUCTION: switch `provider` to "postgresql" and set DATABASE_URL
+// to your Postgres connection string, then run `prisma migrate dev`.
+// That is the ONLY schema change needed. See docs/TROUBLESHOOTING.md.
+//
+// NOTE ON ENUM-LIKE FIELDS: SQLite doesn't support Prisma enums, so
+// role/type/mode fields are Strings. The allowed values are defined
+// ONCE in packages/core/src/constants.ts and validated everywhere
+// with zod. Allowed values are documented next to each field below.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// Identity & tenancy
+// ------------------------------------------------------------
+
+model University {
+  id          String   @id @default(cuid())
+  name        String
+  emailDomain String   @unique // e.g. "stanford.edu" - used for signup verification
+  createdAt   DateTime @default(now())
+
+  users User[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("STUDENT") // STUDENT | TA | INSTRUCTOR
+  plan         String    @default("FREE") // FREE | PRO (PRO unlocks AI features)
+  universityId String
+  xp           Int       @default(0)
+  streakCount  Int       @default(0)
+  lastActiveAt DateTime? // last day that counted toward the streak
+  createdAt    DateTime  @default(now())
+
+  // Email verification (code-based). A user is "blocked until verified" only
+  // while pendingCodeHash is set, so pre-existing accounts and Google
+  // sign-ins (Google-verified) are grandfathered in without a backfill.
+  emailVerified         DateTime? // when the email was confirmed (or Google sign-in)
+  pendingCodeHash       String? // bcrypt hash of the outstanding 6-digit code
+  pendingCodeExpiresAt  DateTime? // when that code stops working
+
+  university       University       @relation(fields: [universityId], references: [id])
+  enrollments      Enrollment[]
+  materials        Material[]
+  materialUpvotes  MaterialUpvote[]
+  quizzesCreated   Quiz[]
+  quizAttempts     QuizAttempt[]
+  tutorSessions    TutorSession[]
+  workspaceMembers WorkspaceMember[]
+  threadsCreated   DiscussionThread[]
+  posts            DiscussionPost[]
+  chatMessages     ChatMessage[]
+  studyPlans       StudyPlan[]
+  flashcards       Flashcard[]
+  activityLogs     ActivityLog[]
+  annotations      Annotation[]
+
+  @@index([universityId])
+}
+
+// ------------------------------------------------------------
+// Courses & enrollment
+// ------------------------------------------------------------
+
+model Course {
+  id                String   @id @default(cuid())
+  code              String // e.g. "CS201"
+  title             String
+  subject           String // e.g. "Computer Science"
+  description       String   @default("")
+  isCrossUniversity Boolean  @default(false) // Phase 2: true = discoverable by every university (see course.browse)
+  createdAt         DateTime @default(now())
+
+  enrollments   Enrollment[]
+  materials     Material[]
+  quizzes       Quiz[]
+  tutorSessions TutorSession[]
+  workspaces    Workspace[]
+  threads       DiscussionThread[]
+  chatMessages  ChatMessage[]
+  studyPlans    StudyPlan[]
+  flashcards    Flashcard[]
+}
+
+model Enrollment {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String
+  roleInCourse String   @default("STUDENT") // STUDENT | TA | INSTRUCTOR
+  createdAt    DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+
+// ------------------------------------------------------------
+// Materials & knowledge base
+// ------------------------------------------------------------
+
+model Material {
+  id            String   @id @default(cuid())
+  courseId      String
+  uploaderId    String
+  title         String
+  type          String // PDF | PPTX | DOCX | NOTES | SYLLABUS | TEXT | OTHER
+  fileUrl       String   @default("") // dev: local /uploads path; prod: object-storage URL
+  extractedText String   @default("") // server-extracted text used as AI grounding context
+  upvoteCount   Int      @default(0) // Phase 4: kept in sync with MaterialUpvote (see material.upvote)
+  createdAt     DateTime @default(now())
+
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  uploader    User             @relation(fields: [uploaderId], references: [id])
+  quizzes     Quiz[]
+  upvotes     MaterialUpvote[]
+  annotations Annotation[]
+
+  @@index([courseId])
+}
+
+// Material upvoting (Phase 4): the class's quality signal. Material.upvoteCount
+// is kept in sync with these rows inside a transaction (see material.upvote).
+model MaterialUpvote {
+  id         String   @id @default(cuid())
+  materialId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([materialId, userId])
+}
+
+// Inline annotations (Phase 4): shared, class-visible notes on a material.
+// `quote` is the snippet of the material the note is anchored to (empty for a
+// general note). Flat (no threading) - kept simple and student-native.
+model Annotation {
+  id         String   @id @default(cuid())
+  materialId String
+  authorId   String
+  quote      String   @default("") // the highlighted snippet this note anchors to
+  body       String
+  createdAt  DateTime @default(now())
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorId], references: [id])
+
+  @@index([materialId])
+}
+
+// ------------------------------------------------------------
+// Quizzing
+// ------------------------------------------------------------
+
+model Quiz {
+  id               String   @id @default(cuid())
+  courseId         String
+  sourceMaterialId String?
+  creatorId        String? // null = generated by AI
+  title            String
+  questions        String // JSON: QuizQuestion[] - see packages/core/src/types.ts
+  isMockExam       Boolean  @default(false) // mock exam simulator (Phase 3)
+  timeLimit        Int? // minutes; null = untimed
+  createdAt        DateTime @default(now())
+
+  course         Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sourceMaterial Material?     @relation(fields: [sourceMaterialId], references: [id])
+  creator        User?         @relation(fields: [creatorId], references: [id])
+  attempts       QuizAttempt[]
+
+  @@index([courseId])
+}
+
+model QuizAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  quizId     String
+  answers    String // JSON: AttemptAnswer[] - student answers + per-question grading
+  score      Float // 0-100
+  weakTopics String   @default("[]") // JSON: string[] - topics missed, feeds spaced repetition (Phase 3)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+}
+
+// ------------------------------------------------------------
+// AI tutor
+// ------------------------------------------------------------
+
+model TutorSession {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String?
+  mode        String // CONCEPT | ASSIGNMENT_HELP | CODE_REVIEW | DEBUG
+  title       String   @default("New session")
+  messages    String   @default("[]") // JSON: TutorMessage[] (role, content, tier, timestamp)
+  tierReached Int      @default(0) // highest hint tier given (0-4) - see Section 6 of spec
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id])
+
+  @@index([userId])
+}
+
+// ------------------------------------------------------------
+// Collaboration (Phase 2)
+// ------------------------------------------------------------
+
+model Workspace {
+  id        String   @id @default(cuid())
+  courseId  String
+  name      String
+  type      String   @default("STUDY_GROUP") // STUDY_GROUP | PROJECT
+  createdAt DateTime @default(now())
+
+  course       Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  members      WorkspaceMember[]
+  project      Project?
+  chatMessages ChatMessage[]
+
+  @@index([courseId])
+}
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String   @default("MEMBER") // OWNER | MEMBER
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+model Project {
+  id          String @id @default(cuid())
+  workspaceId String @unique
+  title       String
+  description String @default("")
+  tasks       String @default("[]") // JSON: ProjectTask[] (id, title, assigneeId, status)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model DiscussionThread {
+  id          String   @id @default(cuid())
+  courseId    String
+  contextType String   @default("COURSE") // COURSE | QUIZ | MATERIAL | EXAM
+  contextId   String? // id of the quiz/material the thread is attached to
+  title       String
+  creatorId   String
+  createdAt   DateTime @default(now())
+
+  course  Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  creator User             @relation(fields: [creatorId], references: [id])
+  posts   DiscussionPost[]
+
+  @@index([courseId])
+}
+
+model DiscussionPost {
+  id           String   @id @default(cuid())
+  threadId     String
+  authorId     String? // null = the AI tutor posted (hint-mode only, never answer-dumping)
+  body         String
+  parentPostId String?
+  createdAt    DateTime @default(now())
+
+  thread  DiscussionThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author  User?            @relation(fields: [authorId], references: [id])
+  parent  DiscussionPost?  @relation("Replies", fields: [parentPostId], references: [id])
+  replies DiscussionPost[] @relation("Replies")
+
+  @@index([threadId])
+}
+
+// Group chat. A message belongs to EITHER a study-group workspace OR a whole
+// course (course-wide group chat). authorId is null for AI messages (the Pro
+// "Ask AI in chat" feature), in which case `tier` records the hint tier.
+model ChatMessage {
+  id          String   @id @default(cuid())
+  workspaceId String? // set for a study-group chat
+  courseId    String? // set for the course-wide chat
+  authorId    String? // null = AI (Pro feature); see `tier`
+  body        String
+  tier        Int? // hint tier for AI messages
+  createdAt   DateTime @default(now())
+
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  author    User?      @relation(fields: [authorId], references: [id])
+
+  @@index([workspaceId])
+  @@index([courseId])
+}
+
+// ------------------------------------------------------------
+// Study planning & spaced repetition (Phase 3)
+// ------------------------------------------------------------
+
+model StudyPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  examDate  DateTime
+  schedule  String // JSON: StudyPlanDay[] (date, topics, minutes, done)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Flashcard {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String
+  front        String
+  back         String
+  nextReviewAt DateTime @default(now())
+  easeFactor   Float    @default(2.5) // SM-2 algorithm
+  intervalDays Int      @default(0)
+  repetitions  Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, nextReviewAt])
+}
+
+// ------------------------------------------------------------
+// Engagement (Phase 4) - XP/streak live on User; events here
+// ------------------------------------------------------------
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // QUIZ_COMPLETED | MATERIAL_UPLOADED | TUTOR_SESSION | STREAK_DAY | ...
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

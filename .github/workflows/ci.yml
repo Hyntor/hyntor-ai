@@ -1,0 +1,29 @@
+# CI: typecheck + production build on every push/PR.
+# If this goes red on GitHub, run the same commands locally to reproduce:
+#   npm run typecheck   and   npm run build
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Prisma generate
+        run: npm run db:generate
+      - name: Typecheck (all workspaces)
+        run: npm run typecheck
+      - name: Build web app
+        run: npm run build
+        env:
+          DATABASE_URL: "file:./dev.db"
+          AUTH_SECRET: "ci-only-secret-not-used-in-production"

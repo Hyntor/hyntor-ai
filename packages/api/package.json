@@ -1,0 +1,28 @@
+{
+  "name": "@coursemind/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@coursemind/core": "*",
+    "@coursemind/db": "*",
+    "@trpc/server": "^11.0.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.0",
+    "jszip": "^3.10.1",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1",
+    "superjson": "^2.2.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pdf-parse": "^1.1.4",
+    "typescript": "^5.6.0"
+  }
+}
