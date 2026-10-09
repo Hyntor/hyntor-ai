@@ -48,3 +48,10 @@ Thumbs.db
 .turbo
 
 .vercel
+
+# Python (prototypes/)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.db
