@@ -20,7 +20,8 @@
     "db:generate": "npm run db:generate -w @hyntor/db",
     "db:migrate": "npm run db:migrate -w @hyntor/db",
     "db:migration:create": "npm run db:migration:create -w @hyntor/db --",
-    "db:seed": "npm run db:seed -w @hyntor/db"
+    "db:seed": "npm run db:seed -w @hyntor/db",
+    "db:reset": "npm run db:reset -w @hyntor/db"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

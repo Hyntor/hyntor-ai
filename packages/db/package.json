@@ -13,9 +13,12 @@
     "db:generate": "tsx scripts/prisma.ts generate",
     "db:migrate": "tsx scripts/prisma.ts migrate",
     "db:migration:create": "tsx scripts/prisma.ts migration:create",
-    "db:studio": "tsx scripts/prisma.ts studio"
+    "db:studio": "tsx scripts/prisma.ts studio",
+    "db:seed": "tsx seed/index.ts",
+    "db:reset": "tsx scripts/reset.ts"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.2.2",
     "@prisma/client": "6.19.3"
   },
   "devDependencies": {

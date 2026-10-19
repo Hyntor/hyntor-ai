@@ -38,6 +38,11 @@ export function resolveDatabaseUrl(raw = process.env.DATABASE_URL): string | und
   return `file:${absolute.replaceAll("\\", "/")}`;
 }
 
+/** Root of LocalFileStore (ADR-0005): STORAGE_DIR, relative to the repository root, default `.storage`. */
+export function resolveStorageDir(raw = process.env.STORAGE_DIR): string {
+  return path.resolve(findRepoRoot(), raw || ".storage");
+}
+
 export function isSqliteUrl(url: string): boolean {
   return url.startsWith("file:");
 }

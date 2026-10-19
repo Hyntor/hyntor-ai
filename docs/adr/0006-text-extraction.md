@@ -19,7 +19,9 @@ version, license, published within the last month):
 | PPTX   | `officeparser`               | 8.1.1   | MIT          |
 
 All three sit behind one `extractText(fileKind, bytes)` function, so a library can be replaced without
-touching callers.
+touching callers. All three read the seed files in `packages/db/seed/files/` (checked 2026-10-19).
+`officeparser` 8 returns a document tree (`parseOffice(...).content`), not a string; the wrapper flattens its
+`text` nodes.
 
 ## Alternatives
 
