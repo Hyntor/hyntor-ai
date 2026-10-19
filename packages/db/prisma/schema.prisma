@@ -1,0 +1,11 @@
+// The only schema file (ADR-0002). Written for PostgreSQL; scripts/prisma.ts swaps the provider line when
+// DATABASE_URL points at SQLite. Keep it portable: no @db.* native types, no PostgreSQL-only features.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

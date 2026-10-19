@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build output
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# test output
+coverage/
+
+# environment: only .env.example is committed
+.env
+.env.*
+!.env.example
+
+# local data
+*.db
+*.db-journal
+.storage/
+packages/db/prisma/.generated/
+
+# editors and OS
+.DS_Store
+Thumbs.db
+.idea/
