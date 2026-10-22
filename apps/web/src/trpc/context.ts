@@ -3,7 +3,7 @@ import {
 } from "node:crypto";
 import { 
   prisma 
-} from "@hyntor-ai";
+} from "@hyntor/db";
 
 const SESSION_COOKIE = "session"; // confirm this against the login code.
 
