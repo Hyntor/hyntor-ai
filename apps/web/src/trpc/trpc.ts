@@ -47,6 +47,6 @@ export const verifiedProcedure = authedProcedure.use(({ctx, next}) => {
 });
 
 export const adminProcedure = authedProcedure.use(({ctx, next}) => {
-  if (ctx.user.role !== "ADMIN") throw new TRPCError({ code: "FORBIDDEN" });
+  if (ctx.user.platformRole !== "admin") throw new TRPCError({code: "FORBIDDEN"});
   return next();
 });
