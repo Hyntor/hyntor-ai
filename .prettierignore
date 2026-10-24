@@ -1,7 +1,0 @@
-node_modules/
-.next/
-coverage/
-package-lock.json
-packages/db/prisma/.generated/
-packages/db/prisma/migrations/
-packages/db/seed/files/

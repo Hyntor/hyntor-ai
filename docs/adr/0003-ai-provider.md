@@ -1,6 +1,6 @@
 # 0003 AI provider: Gemini, server-side, behind one module
 
-**Status:** Proposed · **Issue:** #5 · **Traces to:** M2 section 6, G6, N9, T6
+**Status:** Proposed, amended by [0010](0010-stack-python-django.md) · **Issue:** #5 · **Traces to:** M2 section 6, G6, N9, T6
 
 ## Context
 

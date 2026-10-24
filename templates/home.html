@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Hyntor</h1>
+  <p class="lede">A course library and tutor that hints before it answers.</p>
+
+  {% if current_user %}
+    <p>
+      Signed in as <strong>{{ current_user.display_name }}</strong> ({{ current_user.email }}) at
+      {{ current_user.university.name }}.
+    </p>
+  {% else %}
+    <p>Placeholder home page. Features land here as the backlog moves.</p>
+    <p><a class="button" href="{% url 'login' %}">Sign in</a></p>
+  {% endif %}
+{% endblock %}

@@ -1,6 +1,6 @@
 # 0007 Authentication: own sessions + Argon2id
 
-**Status:** Proposed · **Issue:** #5 · **Traces to:** A1-A6, N5
+**Status:** Proposed, amended by [0010](0010-stack-python-django.md) · **Issue:** #5 · **Traces to:** A1-A6, N5
 
 ## Context
 

@@ -3,15 +3,16 @@
 Hyntor is a course library and AI tutor: students share materials for a course across terms, and the tutor
 answers from those materials with hints before full answers.
 
-Architecture decisions are in [docs/adr](docs/adr/README.md).
+Built with Python and Django, server-rendered HTML and CSS. Architecture decisions are in
+[docs/adr](docs/adr/README.md); start with [0010](docs/adr/0010-stack-python-django.md).
 
 ## Run locally
 
 ### Prerequisites
 
-- **Node.js 24** (the version in `.nvmrc`; with nvm: `nvm use`) and npm 11
+- **Python 3.14** (`python --version`)
 - Git
-- Nothing else: development uses a SQLite file, so no database server is needed (ADR-0002)
+- Nothing else: development uses a SQLite file, so there is no database server to install
 
 ### Steps
 
@@ -20,27 +21,31 @@ Architecture decisions are in [docs/adr](docs/adr/README.md).
 git clone https://github.com/Hyntor/hyntor-ai.git
 cd hyntor-ai
 
-# 2. Environment: the defaults work as-is for local development
+# 2. Create and activate a virtual environment
+python -m venv .venv
+source .venv/Scripts/activate      # Windows (Git Bash)
+# .venv\Scripts\Activate.ps1       # Windows (PowerShell)
+# source .venv/bin/activate        # macOS and Linux
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Environment: the defaults work as-is for local development
 cp .env.example .env
 
-# 3. Install (also generates the Prisma client for the provider in DATABASE_URL)
-npm install
+# 5. Create the database schema
+python manage.py migrate
 
-# 4. Create the database schema
-npm run db:migrate
+# 6. Load the demo data (safe to run again: it creates nothing the second time)
+python manage.py seed
 
-# 5. Load the demo data (safe to run again: it creates nothing the second time)
-npm run db:seed
-
-# 6. Start the app at http://localhost:3000
-npm run dev
+# 7. Start the site at http://localhost:8000
+python manage.py runserver
 ```
-
-On Windows PowerShell, use `Copy-Item .env.example .env` in step 2.
 
 ### Demo accounts
 
-All seeded accounts use the password `hyntor-demo-password` (or `SEED_PASSWORD` from `.env`).
+All seeded accounts use the password `hyntor-demo-password`.
 
 | Email                    | Role                                                  |
 | ------------------------ | ----------------------------------------------------- |
@@ -49,37 +54,47 @@ All seeded accounts use the password `hyntor-demo-password` (or `SEED_PASSWORD` 
 | `maintainer@example.edu` | Course maintainer of CSCI 1010 in 2026-SP and 2026-FA |
 | `admin@example.edu`      | Platform administrator                                |
 
-The demo course has three materials (PDF, DOCX, PPTX) from `packages/db/seed/files/`. They are notes the team
-wrote for the demo, not course files.
+The demo course has three materials (PDF, DOCX, PPTX) from `seed/files/`. They are notes the team wrote for
+the demo, not course files.
 
 ### Starting over
 
 ```sh
-npm run db:reset   # drops all data and stored files, re-applies the schema, seeds
+python manage.py reset_demo   # drops all data and stored files, re-applies migrations, seeds
 ```
 
-## Scripts
+## Commands
 
-| Script                             | What it does                                                               |
-| ---------------------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`                      | Next.js dev server                                                         |
-| `npm run build`                    | Production build of `apps/web`                                             |
-| `npm run typecheck`                | `tsc --noEmit` in every workspace                                          |
-| `npm run lint`                     | ESLint, zero warnings allowed                                              |
-| `npm run format` / `format:check`  | Prettier write / check                                                     |
-| `npm test`                         | Vitest in every workspace (database tests use `./test.db`, never `dev.db`) |
-| `npm run db:generate`              | Regenerate the Prisma client (after switching provider)                    |
-| `npm run db:migrate`               | Apply the schema: `db push` on SQLite, `migrate deploy` on PostgreSQL      |
-| `npm run db:migration:create -- x` | New migration named `x` (needs a PostgreSQL `DATABASE_URL`)                |
-| `npm run db:seed`                  | Load the demo data (idempotent)                                            |
-| `npm run db:reset`                 | Drop, migrate, seed                                                        |
+| Command                            | What it does                                              |
+| ---------------------------------- | --------------------------------------------------------- |
+| `python manage.py runserver`       | Development server on http://localhost:8000               |
+| `python manage.py migrate`         | Apply migrations                                          |
+| `python manage.py makemigrations`  | Write a migration after changing a model                  |
+| `python manage.py seed`            | Load the demo data (idempotent)                           |
+| `python manage.py reset_demo`      | Drop, migrate, seed                                       |
+| `python manage.py check`           | Django system checks                                      |
+| `python manage.py check --deploy`  | Extra checks for a production configuration               |
 
 ## Repository layout
 
 ```
-apps/web        Next.js App Router UI and the /api/trpc route handler
-packages/api    tRPC routers
-packages/core   Shared types, Zod schemas, constants
-packages/db     Prisma schema, migrations, client, seed
-docs/adr        Architecture decision records
+hyntor/       Django project: settings, URLs, the home view
+accounts/     University, User, Session; sign in and sign out
+courses/      Course, Enrollment
+library/      Material, MaterialChunk
+tutor/        TutorSession, TutorMessage, MessageCitation
+templates/    base.html and one template per page
+static/css/   app.css
+seed/files/   demo materials loaded by `manage.py seed`
+docs/adr/     architecture decision records
 ```
+
+## Database
+
+SQLite in development, with no configuration. CI and production set `DATABASE_URL` to PostgreSQL:
+
+```sh
+DATABASE_URL="postgres://USER:PASSWORD@HOST:5432/hyntor"
+```
+
+The same models and the same migrations serve both.
