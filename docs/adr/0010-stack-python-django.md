@@ -66,7 +66,10 @@ tables that the ERD does not have. Passwords are hashed with `argon2-cffi` direc
 - **0007 Authentication.** Unchanged in substance: our own `Session` table, a random 256-bit token in the
   cookie, only its SHA-256 hash stored. The package changes from `@node-rs/argon2` to `argon2-cffi` 25.1.0,
   which defaults to Argon2id.
-- **0008 Testing and hosting.** Vitest becomes `pytest-django` 4.14.0 over Django's test client. **Vercel is
+- **0008 Testing and hosting.** Vitest becomes Django's own test runner (`python manage.py test`), which is
+  `unittest` with a database harness around it. It was chosen over `pytest-django` deliberately: it needs no
+  extra dependency, no plugin and no `conftest.py`, so a test file is a class with methods and nothing else
+  to explain in the defense. **Vercel is
   dropped**: it is built for Next.js and runs Python only as serverless functions. A long-running host
   (Render, Railway or Fly.io) with managed PostgreSQL replaces it, served by `gunicorn` 26.2.0 with
   `whitenoise` 6.12.0 for static files. The exact host is still open and is recorded in a follow-up ADR

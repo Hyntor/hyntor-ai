@@ -12,7 +12,9 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["university", "code"], name="unique_course_code_per_university")]
+        constraints = [
+            models.UniqueConstraint(fields=["university", "code"], name="unique_course_code_per_university")
+        ]
 
     def __str__(self) -> str:
         return f"{self.code} {self.title}"
@@ -42,7 +44,9 @@ class Enrollment(models.Model):
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["user", "course", "term"], name="unique_enrollment_per_term")]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "course", "term"], name="unique_enrollment_per_term")
+        ]
         indexes = [models.Index(fields=["course", "term"])]
 
     def __str__(self) -> str:

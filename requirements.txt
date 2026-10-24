@@ -6,3 +6,7 @@ dj-database-url==3.1.2
 
 # PostgreSQL driver, used in CI and production. Harmless to install for SQLite development.
 psycopg[binary]==3.3.6
+
+# Production server and static files (ADR-0011).
+gunicorn==26.2.0
+whitenoise==6.12.0

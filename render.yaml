@@ -1,0 +1,97 @@
+# Render Blueprint: the whole deployment in one file (ADR-0011).
+#
+# Two web services and one database. Render reads this when the repository is connected as a
+# Blueprint, so neither service is configured by clicking around a dashboard, and the configuration
+# is reviewed in pull requests like any other code.
+#
+#   hyntor-web    Django site: sign-in, courses, library. Public entry point.
+#   hyntor-tutor  Streamlit tutor. Reachable only with a signed hand-off token from hyntor-web.
+#   hyntor-db     PostgreSQL, used by hyntor-web.
+#
+# Two values are NOT in this file and must be set by hand in the Render dashboard, because secrets
+# do not belong in a repository:
+#   GEMINI_API_KEY  on hyntor-tutor  (sync: false below means "ask me for this")
+#
+# Everything else, including the shared hand-off secret and the two services' addresses, is wired
+# up automatically by the references below.
+
+databases:
+  - name: hyntor-db
+    databaseName: hyntor
+    user: hyntor
+    plan: free
+
+services:
+  # ---------------------------------------------------------------- Django site
+  - type: web
+    name: hyntor-web
+    runtime: python
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --no-input &&
+      python manage.py migrate --no-input
+    # Gunicorn serves the application; whitenoise serves the static files from inside it.
+    startCommand: gunicorn hyntor.wsgi:application --workers 2 --timeout 60
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.15"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hyntor-db
+          property: connectionString
+      # Render generates this once and keeps it. Nobody, including us, needs to see it.
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "0"
+      # The shared secret for the hand-off token. Generated here and read by the tutor service
+      # below, so the two always agree and the value never appears in the repository.
+      - key: HANDOFF_SECRET
+        generateValue: true
+      # Render fills in the tutor's own hostname, so the address is never copied by hand.
+      - key: TUTOR_CHAT_HOST
+        fromService:
+          type: web
+          name: hyntor-tutor
+          property: host
+      # No GEMINI_API_KEY here on purpose: the Django service never calls the model.
+
+  # ---------------------------------------------------------------- Streamlit tutor
+  - type: web
+    name: hyntor-tutor
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r tutor_chat/requirements.txt
+    # --server.address 0.0.0.0 makes it reachable from outside the container; $PORT is assigned by
+    # Render; --server.headless stops Streamlit trying to open a browser on the server.
+    startCommand: >-
+      streamlit run tutor_chat/AI_Chatbot.py
+      --server.port $PORT
+      --server.address 0.0.0.0
+      --server.headless true
+      --browser.gatherUsageStats false
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.15"
+      # The same value the Django service generated. Without a match, every token is refused and
+      # nobody can get in - which is the correct failure, not an open door.
+      - key: HANDOFF_SECRET
+        fromService:
+          type: web
+          name: hyntor-web
+          envVarKey: HANDOFF_SECRET
+      # Used for the "sign in to Hyntor" link shown to anyone arriving without a valid token.
+      # Render supplies the hostname; the app turns it into an https:// address.
+      - key: HYNTOR_SITE_HOST
+        fromService:
+          type: web
+          name: hyntor-web
+          property: host
+      # Set this in the Render dashboard. Until it is set, the tutor says it is not configured
+      # rather than crashing.
+      - key: GEMINI_API_KEY
+        sync: false

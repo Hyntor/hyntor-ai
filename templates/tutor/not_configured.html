@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Tutor unavailable - Hyntor{% endblock %}
+
+{% block content %}
+  <h1>The tutor is not set up yet</h1>
+  <p class="lede">Hyntor is running, but no tutor service is configured for this environment.</p>
+  <p>
+    An administrator sets <code>TUTOR_CHAT_URL</code> to the address of the tutor service. Until then the
+    rest of the site works normally.
+  </p>
+  <p><a class="button" href="{% url 'home' %}">Back to Hyntor</a></p>
+{% endblock %}

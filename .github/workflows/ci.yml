@@ -1,0 +1,125 @@
+# Continuous integration for Hyntor (FND-3, #8).
+#
+# Every line here is explained in docs/testing-plan.md, section 2. In short: this runs on every push and
+# every pull request into main, and a merge is blocked unless it passes.
+name: ci
+
+on:
+  # Every push on every branch, so a problem is found before a pull request is opened.
+  push:
+  # And again when a pull request targets main, which is what branch protection checks.
+  pull_request:
+    branches: [main]
+
+# A second push to the same branch cancels the run still going for the older commit. Without this, a
+# branch pushed three times in a minute runs three times and the first two results are worthless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# The workflow only reads the repository. It cannot push, comment or change settings.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Run both versions to the end, so one failure does not hide the other's result.
+      fail-fast: false
+      matrix:
+        # The oldest Python we support and the one we develop on.
+        python-version: ["3.12", "3.14"]
+
+    # PostgreSQL is what production uses, so CI tests against it rather than the SQLite file used in
+    # development. A query that works on SQLite but not PostgreSQL fails here instead of after deploy.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: hyntor
+          POSTGRES_PASSWORD: hyntor
+          POSTGRES_DB: hyntor_test
+        ports:
+          - 5432:5432
+        # The job waits for these to pass before the first step runs, so no step races the database.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://hyntor:hyntor@localhost:5432/hyntor_test
+      # A throwaway key. The real one lives in the host's settings and never in the repository.
+      DJANGO_SECRET_KEY: ci-only-not-a-real-secret
+      DJANGO_DEBUG: "0"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      # No GEMINI_API_KEY is set anywhere in this file, on purpose (N9, T6). The suite runs the no-key
+      # path, so CI can never spend the team's quota or leak a key into a log.
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          # Caches the downloaded packages between runs, keyed on the requirements files.
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # Lint and formatting before the tests: these take seconds and catch the cheapest mistakes first.
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Check formatting (ruff)
+        run: ruff format --check .
+
+      - name: Django system checks
+        run: python manage.py check
+
+      # Fails if a model was changed without writing the matching migration. Easy to forget, and it
+      # breaks deployment rather than the tests, so it is checked explicitly.
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations
+        run: python manage.py migrate --no-input
+
+      # Writes the static-file manifest the production storage backend reads. Running it here means
+      # a missing or misspelled static file fails the build instead of the deployed page.
+      - name: Collect static files
+        run: python manage.py collectstatic --no-input
+
+      - name: Run tests with coverage
+        run: coverage run manage.py test --verbosity 2
+
+      # --fail-under is the floor from issue #9: it starts at the measured value and only goes up.
+      - name: Coverage report
+        run: |
+          coverage report --fail-under=85
+          echo '### Coverage (python ${{ matrix.python-version }})' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          coverage report >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the coverage report
+        # Runs even when the tests failed, because that is when the report is most useful.
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: .coverage
+          include-hidden-files: true
+          retention-days: 7
