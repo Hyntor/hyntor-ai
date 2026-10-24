@@ -1,6 +1,6 @@
 # 0006 Text extraction libraries
 
-**Status:** Proposed · **Issue:** #5
+**Status:** Proposed, amended by [0010](0010-stack-python-django.md) · **Issue:** #5
 
 ## Context
 

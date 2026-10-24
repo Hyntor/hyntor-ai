@@ -1,26 +1,30 @@
-# dependencies
-node_modules/
+# virtual environment
+.venv/
+venv/
 
-# build output
-.next/
-out/
-dist/
-*.tsbuildinfo
-next-env.d.ts
-
-# test output
-coverage/
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # environment: only .env.example is committed
 .env
 .env.*
 !.env.example
 
-# local data
-*.db
-*.db-journal
+# local database
+*.sqlite3
+*.sqlite3-journal
+
+# uploaded files and collected static files
 .storage/
-packages/db/prisma/.generated/
+staticfiles/
+
+# notebooks
+.ipynb_checkpoints/
 
 # editors and OS
 .DS_Store

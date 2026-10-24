@@ -1,0 +1,26 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Hyntor{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="{% url 'home' %}">Hyntor</a>
+      {% if current_user %}
+        <form class="header-form" method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <span class="signed-in">{{ current_user.display_name }}</span>
+          <button class="button button-quiet" type="submit">Sign out</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Sign in</a>
+      {% endif %}
+    </header>
+
+    <main class="page">{% block content %}{% endblock %}</main>
+  </body>
+</html>

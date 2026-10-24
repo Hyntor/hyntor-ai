@@ -1,0 +1,8 @@
+# Versions checked on PyPI on 2026-10-24 (exists, current, maintained, license, Python 3.14 support).
+Django==6.1.2
+argon2-cffi==25.1.0
+python-dotenv==1.2.4
+dj-database-url==3.1.2
+
+# PostgreSQL driver, used in CI and production. Harmless to install for SQLite development.
+psycopg[binary]==3.3.6

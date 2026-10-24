@@ -1,6 +1,6 @@
 # 0002 Database: SQLite in dev, PostgreSQL in CI and prod, one schema file
 
-**Status:** Proposed · **Issue:** #5 · **Traces to:** N10
+**Status:** Proposed, amended by [0010](0010-stack-python-django.md) · **Issue:** #5 · **Traces to:** N10
 
 ## Context
 

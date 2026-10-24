@@ -1,0 +1,115 @@
+:root {
+  --ink: #1f2a44;
+  --muted: #5b6577;
+  --line: #d6dbe4;
+  --accent: #1f2a44;
+  --error: #b3261e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: #fff;
+  line-height: 1.5;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.header-form {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.signed-in {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.page {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.lede {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1.5rem;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+input:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-quiet {
+  background: transparent;
+  color: var(--ink);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.error {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--error);
+  border-radius: 6px;
+  color: var(--error);
+  background: #fdf1f0;
+}
