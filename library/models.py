@@ -42,7 +42,9 @@ class Material(models.Model):
     )
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["course", "sha256"], name="unique_material_per_course")]
+        constraints = [
+            models.UniqueConstraint(fields=["course", "sha256"], name="unique_material_per_course")
+        ]
         indexes = [models.Index(fields=["course", "-uploaded_at"])]
 
     def __str__(self) -> str:

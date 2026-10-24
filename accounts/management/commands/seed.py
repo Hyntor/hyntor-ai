@@ -20,7 +20,8 @@ from library.models import FileKind, Material
 
 SEED_FILES_DIR = Path(settings.BASE_DIR) / "seed" / "files"
 
-DEFAULT_PASSWORD = "hyntor-demo-password"
+# Documented in the README; demo accounts only, never a real credential.
+DEFAULT_PASSWORD = "hyntor-demo-password"  # noqa: S105
 
 UNIVERSITY = {"name": "Demo University", "email_domain": "example.edu"}
 

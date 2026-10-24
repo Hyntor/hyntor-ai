@@ -1,0 +1,38 @@
+=== FICTIONAL TEST DATA - NOT A REAL DUKE DOCUMENT ===
+This file contains invented sample data used to test retrieval-augmented generation.
+Nothing in it is real or affiliated with Duke University.
+======================================================
+
+INTERNAL ADVISING MEMO - DUKE
+Document ID: DKE-2026-0228
+Last updated: 2026-02-28
+Prepared by: Office of Interdisciplinary Initiatives (internal distribution only)
+
+PROGRAM: Fitzgerald Applied Systems Track (FAST)
+- Internal program code: FAST-902
+- Annual stipend: $39,800 plus a $2,750 conference travel budget
+- Cohort size: capped at 22 students per year
+- Application deadline: March 6, 2026 at 5:00 PM ET
+- Faculty director: Dr. Priya Raghunathan, Gross Hall Room 318
+- Acceptance rate for the 2025 cycle: 11.4% (596 applicants, 91 interviews, 68 offers)
+
+ADMISSION REQUIREMENTS (FAST-902)
+- Minimum 3.55 cumulative GPA
+- One completed systems or architecture course
+- A recorded 6-minute technical presentation uploaded to the internal MERIDIAN portal
+- Two letters of recommendation, at least one from outside the applicant's home department
+
+INTERNAL LAB PLACEMENTS
+- The Bellweather Robotics Annex - accepts 7 FAST students annually
+- Coastal Modeling Unit - accepts 6 FAST students annually
+- Duke Applied Signals Workshop - accepts 9 FAST students annually
+
+FUNDING NOTES
+FAST students receive a guaranteed second-year renewal provided they maintain a 3.4
+GPA. The internal renewal review happens each year during the third week of April.
+Students placed in the Bellweather Robotics Annex receive an additional $4,100
+equipment stipend not available to other placements.
+
+CONTACT
+Program administrator: Serena Vaughn-Mbeki, ext. 8-1174
+Internal escalation: fast-admin@[internal-only]

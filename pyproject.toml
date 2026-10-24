@@ -1,0 +1,39 @@
+# Configuration for ruff (linter and formatter) and coverage.
+# Ruff replaces the ESLint + Prettier pair from the TypeScript stack: one tool, one config.
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"  # emit syntax that reads the same on 3.12+, not only on 3.14
+extend-exclude = ["*/migrations/*", ".venv", "notebooks"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes: undefined names, unused imports and variables
+    "I",   # import sorting
+    "UP",  # pyupgrade: outdated syntax
+    "B",   # bugbear: likely bugs, e.g. mutable default arguments
+    "DJ",  # Django-specific checks
+    "S",   # bandit: security problems such as hardcoded passwords
+    "T20", # no print() left in the code
+]
+ignore = [
+    "S101", # assert is how tests are written
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test passwords are not secrets, and tests may be long.
+"*/tests/*" = ["S105", "S106", "E501"]
+# settings.py holds the development fallback secret key, which is documented as insecure.
+"hyntor/settings.py" = ["S105"]
+# The model's system prompt is prose in a triple-quoted string. Rewrapping it to fit the line limit
+# would change the text sent to the model, so the limit does not apply to this file.
+"tutor_chat/memory.py" = ["E501"]
+
+[tool.coverage.run]
+source = ["accounts", "courses", "library", "tutor", "hyntor"]
+omit = ["*/migrations/*", "*/tests/*", "manage.py", "*/wsgi.py", "*/asgi.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

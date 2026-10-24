@@ -1,0 +1,9 @@
+# Tools used by developers and by CI, but not needed to run the site.
+# Versions checked on PyPI on 2026-10-24.
+-r requirements.txt
+
+ruff==0.17.2
+coverage==7.17.0
+
+# The tutor service's own dependencies. CI installs them so the Streamlit gate test can run.
+-r tutor_chat/requirements.txt

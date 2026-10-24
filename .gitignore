@@ -30,3 +30,5 @@ staticfiles/
 .DS_Store
 Thumbs.db
 .idea/
+memories.db
+*.db

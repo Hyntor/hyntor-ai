@@ -20,9 +20,20 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key-do-not-u
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+
+# Render publishes the service's own hostname here. Reading it means the deployed site works without
+# anyone copying the generated address into a setting by hand.
+RENDER_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "")
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOSTNAME}")
 
 # One app per epic, so every module has an owner (DEL-5). django.contrib.auth is deliberately absent:
 # Hyntor has its own User and Session models from the ERD, and hashes passwords with argon2-cffi.
@@ -36,6 +47,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serves static files in production. Render has no separate web server in front of Django.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -80,12 +93,38 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        # In production: compress each file and put a content hash in its name, so a changed file is
+        # never served from a stale browser cache. This reads a manifest that `collectstatic` writes,
+        # so it only works after that command has run - which is why CI runs it before the tests.
+        # In development there is no manifest, and files are served straight from static/.
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        )
+    },
+}
+
 # Uploaded materials (ADR-0005). Local disk in development; blob storage in production.
 STORAGE_DIR = Path(os.environ.get("STORAGE_DIR") or BASE_DIR / ".storage")
 
 # Session cookie (ADR-0007). ACC-2 (#15) owns renewal and the final lifetime.
 SESSION_COOKIE_NAME = "hyntor_session"
 SESSION_TTL_DAYS = 7
+
+# The Streamlit tutor service (ADR-0011). Empty means "no tutor configured", and /tutor/ says so
+# instead of redirecting nowhere (G6). On Render, TUTOR_CHAT_HOST is filled in from the other
+# service, so neither address has to be copied by hand.
+TUTOR_CHAT_HOST = os.environ.get("TUTOR_CHAT_HOST", "")
+TUTOR_CHAT_URL = os.environ.get("TUTOR_CHAT_URL") or (f"https://{TUTOR_CHAT_HOST}" if TUTOR_CHAT_HOST else "")
+
+# Shared with the tutor service; it signs the hand-off token that identifies the signed-in user.
+# Falling back to SECRET_KEY keeps local development working with no extra setup. In production the
+# two services are given the same generated value.
+HANDOFF_SECRET = os.environ.get("HANDOFF_SECRET") or SECRET_KEY
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
