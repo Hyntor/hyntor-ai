@@ -105,9 +105,11 @@ false` lets both finish, so one failure does not hide the other's result.
 
 ### CD
 
-Continuous *deployment* is not built yet. It is issue #13, scheduled for 2–6 November, and blocked on
-choosing a host: [ADR-0008](adr/0008-testing-and-hosting.md) named Vercel while the project was Next.js, and
-Django needs a long-running host instead. See risk R1.
+Continuous deployment (#13) is Render, configured in [`render.yaml`](../render.yaml)
+([ADR-0011](adr/0011-deployment-render.md)). Both services track `main` with `autoDeployTrigger:
+checksPass`: Render deploys a commit only after GitHub reports that this workflow passed on it. Together with
+branch protection, a change reaches production only through a reviewed pull request with green CI. The build
+applies migrations and runs the idempotent seed, so a deploy never needs a manual step. See risk R1.
 
 ---
 
@@ -272,7 +274,7 @@ members at random.
 **R1 — Deployment is configured but not yet proven.** *Possible, high impact.* Resolved in part on 24
 October: the host is Render, described by [`render.yaml`](../render.yaml) in the repository
 ([ADR-0011](adr/0011-deployment-render.md)), with Django, the Streamlit tutor and PostgreSQL. Render
-redeploys on every push to `main`, so CD exists. What is unproven is the first deploy: nothing has run on
+deploys each commit on `main` once CI passes on it (#13). What is unproven is the first deploy: nothing has run on
 Render yet, and `render.yaml` cannot be tested locally.
 *Contingency:* deploy by 27 October, well before the deadline, so the first failures surface early. Two
 known expiry traps: Render's free PostgreSQL lasts 30 days and must be recreated before the M5 demo on 10
