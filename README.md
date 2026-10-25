@@ -87,9 +87,26 @@ Hyntor works normally.
 
 ## Deployment
 
-Render, described by [`render.yaml`](render.yaml): the Django site, the tutor and PostgreSQL. Connect the
-repository as a Blueprint and set `GEMINI_API_KEY` in the dashboard; everything else, including the shared
-hand-off secret, is wired up by the Blueprint.
+Render, described by [`render.yaml`](render.yaml): the Django site, the tutor and PostgreSQL.
+
+**Continuous deployment.** Merging into `main` deploys both services, but only once the `ci` workflow has
+passed on that commit (`autoDeployTrigger: checksPass`). A commit with failing tests is never deployed. Each
+deploy installs dependencies, collects static files, applies migrations and seeds the demo accounts (a no-op
+after the first time).
+
+**First-time setup** (once, by someone with access to the Render workspace):
+
+1. In the Render dashboard: **New > Blueprint**, connect the `Hyntor/hyntor-ai` GitHub repository, branch
+   `main`. Render reads `render.yaml` and proposes `hyntor-web`, `hyntor-tutor` and `hyntor-db`.
+2. It asks for the two values marked `sync: false`:
+   - `SEED_PASSWORD` (hyntor-web): the password for the demo accounts on the live site. Do not reuse the
+     README's demo password; the site is public and one account is an admin. Share it with the team privately.
+   - `GEMINI_API_KEY` (hyntor-tutor): optional; without it the tutor shows a setup notice.
+3. **Apply**. The first deploy takes a few minutes. The site is then at the `hyntor-web` URL shown in the
+   dashboard. Everything else, including the shared hand-off secret, is wired up by the Blueprint.
+
+Free-tier limits: services sleep when idle and take about a minute to wake (open both pages before a demo),
+and the free database expires after 30 days (see [ADR-0011](docs/adr/0011-deployment-render.md)).
 
 ## Testing
 

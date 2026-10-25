@@ -9,8 +9,12 @@
 #   hyntor-db     PostgreSQL, used by hyntor-web.
 #
 # Two values are NOT in this file and must be set by hand in the Render dashboard, because secrets
-# do not belong in a repository:
-#   GEMINI_API_KEY  on hyntor-tutor  (sync: false below means "ask me for this")
+# do not belong in a repository (sync: false below means "ask me for this"):
+#   SEED_PASSWORD   on hyntor-web    password for the demo accounts on the public site
+#   GEMINI_API_KEY  on hyntor-tutor
+#
+# Continuous deployment (#13): both services deploy from main, and only after GitHub reports that
+# the ci workflow passed on that commit (autoDeployTrigger: checksPass). A red build never ships.
 #
 # Everything else, including the shared hand-off secret and the two services' addresses, is wired
 # up automatically by the references below.
@@ -28,11 +32,15 @@ services:
     runtime: python
     plan: free
     region: oregon
+    # Deploy each commit on main once its CI checks pass; a failing commit is never deployed.
+    branch: main
+    autoDeployTrigger: checksPass
     healthCheckPath: /
     buildCommand: >-
       pip install -r requirements.txt &&
       python manage.py collectstatic --no-input &&
-      python manage.py migrate --no-input
+      python manage.py migrate --no-input &&
+      python manage.py seed --password "${SEED_PASSWORD:?Set SEED_PASSWORD on hyntor-web in the Render dashboard}"
     # Gunicorn serves the application; whitenoise serves the static files from inside it.
     startCommand: gunicorn hyntor.wsgi:application --workers 2 --timeout 60
     envVars:
@@ -57,6 +65,12 @@ services:
           type: web
           name: hyntor-tutor
           property: host
+      # Password for the demo accounts the build seeds (there is no signup page yet). Not the README's
+      # demo password: this site is public and one of the accounts is an admin. The build stops if it
+      # is unset. Seeding is idempotent and only sets passwords on accounts it creates, so changing
+      # this later does not change existing accounts.
+      - key: SEED_PASSWORD
+        sync: false
       # No GEMINI_API_KEY here on purpose: the Django service never calls the model.
 
   # ---------------------------------------------------------------- Streamlit tutor
@@ -65,6 +79,9 @@ services:
     runtime: python
     plan: free
     region: oregon
+    # Deploy each commit on main once its CI checks pass; a failing commit is never deployed.
+    branch: main
+    autoDeployTrigger: checksPass
     buildCommand: pip install -r tutor_chat/requirements.txt
     # --server.address 0.0.0.0 makes it reachable from outside the container; $PORT is assigned by
     # Render; --server.headless stops Streamlit trying to open a browser on the server.
