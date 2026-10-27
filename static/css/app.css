@@ -1,9 +1,23 @@
+/* Hyntor styles. One stylesheet, no framework and no build step: the markup is server-rendered
+   HTML, so the CSS stays readable on its own.
+
+   The palette is built from royal blue. White text on --blue has a contrast ratio of about 4.9:1,
+   which passes WCAG AA for normal text, so buttons and links are readable rather than merely blue. */
+
 :root {
-  --ink: #1f2a44;
-  --muted: #5b6577;
-  --line: #d6dbe4;
-  --accent: #1f2a44;
+  --blue: #4169e1; /* royal blue: buttons, links, accents */
+  --blue-dark: #2f4fc4; /* hover and active states */
+  --blue-deep: #1b2a6b; /* headings */
+  --blue-tint: #eef2fd; /* section backgrounds */
+  --blue-edge: #d4ddf9; /* borders on tinted areas */
+
+  --ink: #1a1f36; /* body text */
+  --muted: #5b6577; /* secondary text */
+  --line: #dde1e9; /* borders on white */
   --error: #b3261e;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(26 31 54 / 6%), 0 8px 24px rgb(26 31 54 / 6%);
 }
 
 * {
@@ -15,23 +29,52 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--ink);
   background: #fff;
-  line-height: 1.5;
+  line-height: 1.6;
 }
+
+a {
+  color: var(--blue);
+}
+
+/* ---------------------------------------------------------------- header */
 
 .site-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--line);
 }
 
 .brand {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--blue-deep);
   text-decoration: none;
+}
+
+/* Stands in for the logo until the real one is added. */
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 6px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .header-form {
@@ -45,21 +88,205 @@ body {
   font-size: 0.9rem;
 }
 
+/* ---------------------------------------------------------------- layout */
+
+/* Narrow column for forms. */
 .page {
   max-width: 28rem;
   margin: 0 auto;
   padding: 3rem 1.5rem;
 }
 
+/* Full-width column for the landing page. */
+.landing {
+  margin: 0 auto;
+  padding: 0;
+}
+
 h1 {
   margin: 0 0 0.5rem;
   font-size: 1.75rem;
+  color: var(--blue-deep);
 }
 
 .lede {
   color: var(--muted);
   margin-top: 0;
 }
+
+/* ---------------------------------------------------------------- hero */
+
+.hero {
+  padding: 4.5rem 1.5rem 3.5rem;
+  text-align: center;
+  background: linear-gradient(180deg, var(--blue-tint), #fff);
+  border-bottom: 1px solid var(--blue-edge);
+}
+
+.hero h1 {
+  max-width: 20ch;
+  margin: 0 auto 1rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.hero p {
+  max-width: 52ch;
+  margin: 0 auto 2rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.hero-note {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- sections */
+
+.section {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem;
+}
+
+.section h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  color: var(--blue-deep);
+}
+
+.section-lede {
+  margin: 0 0 2rem;
+  color: var(--muted);
+}
+
+.features {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feature {
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.feature h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  color: var(--blue-deep);
+}
+
+.feature p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.feature-mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 0.9rem;
+  border-radius: 8px;
+  background: var(--blue-tint);
+  color: var(--blue);
+}
+
+.feature-mark svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Numbered steps. */
+.steps {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.step {
+  counter-increment: step;
+}
+
+.step::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-bottom: 0.6rem;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.step h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: var(--blue-deep);
+}
+
+.step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.band {
+  background: var(--blue-tint);
+  border-block: 1px solid var(--blue-edge);
+}
+
+.callout {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.callout h2 {
+  margin: 0 0 0.5rem;
+  color: var(--blue-deep);
+}
+
+.callout p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+.site-footer {
+  padding: 2rem 1.5rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- forms */
 
 .stack {
   display: flex;
@@ -74,42 +301,158 @@ label {
 }
 
 input {
-  padding: 0.55rem 0.7rem;
+  padding: 0.6rem 0.7rem;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius);
   font-size: 1rem;
+  font-family: inherit;
   margin-bottom: 0.75rem;
 }
 
 input:focus-visible,
-.button:focus-visible {
-  outline: 2px solid var(--accent);
+.button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
 
+.hint {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.form-footer {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- buttons */
+
 .button {
   display: inline-block;
-  padding: 0.55rem 1rem;
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  background: var(--accent);
+  padding: 0.65rem 1.25rem;
+  border: 1px solid var(--blue);
+  border-radius: var(--radius);
+  background: var(--blue);
   color: #fff;
   font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
 
+.button:hover {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+/* Same size and weight, white background: a secondary choice, not a lesser one. */
+.button-outline {
+  background: #fff;
+  color: var(--blue);
+}
+
+.button-outline:hover {
+  background: var(--blue-tint);
+  border-color: var(--blue-dark);
+  color: var(--blue-dark);
+}
+
 .button-quiet {
+  padding: 0.35rem 0.8rem;
+  border-color: transparent;
   background: transparent;
   color: var(--ink);
-  padding: 0.3rem 0.7rem;
   font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.button-quiet:hover {
+  background: var(--blue-tint);
+  border-color: var(--blue-edge);
+  color: var(--blue-deep);
 }
 
 .error {
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--error);
-  border-radius: 6px;
+  border-radius: var(--radius);
   color: var(--error);
   background: #fdf1f0;
+}
+
+/* ---------------------------------------------------------------- signed in */
+
+.welcome {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button,
+  .feature {
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease;
+  }
+}
+
+/* ---------------------------------------------------------------- google sign-in */
+
+/* "or" rule between the password form and the Google button. */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.button-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  /* Google's branding guidelines ask for their mark on a neutral button, not a coloured one. */
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.button-google:hover {
+  background: var(--blue-tint);
+  border-color: var(--blue-edge);
+  color: var(--ink);
+}
+
+.google-mark {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+.hint-centered {
+  margin-top: 0.75rem;
+  text-align: center;
 }

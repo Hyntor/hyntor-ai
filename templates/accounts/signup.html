@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Create an account - Hyntor{% endblock %}
+
+{% block content %}
+  <h1>Create your account</h1>
+  <p class="lede">Hyntor is for students at a registered university. Use your university email address.</p>
+
+  {% if error %}
+    <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form method="post" action="{% url 'signup' %}" class="stack">
+    {% csrf_token %}
+
+    <label for="display_name">Your name</label>
+    <input id="display_name" name="display_name" type="text" value="{{ display_name|default:'' }}"
+           required autocomplete="name" maxlength="100" autofocus />
+    <p class="hint">Other students in your courses will see this.</p>
+
+    <label for="email">University email</label>
+    <input id="email" name="email" type="email" value="{{ email|default:'' }}"
+           required autocomplete="email" maxlength="255" />
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required autocomplete="new-password"
+           minlength="{{ min_password_length }}" />
+    <p class="hint">At least {{ min_password_length }} characters.</p>
+
+    <button class="button" type="submit">Create account</button>
+  </form>
+
+  {% include "accounts/_google_button.html" %}
+
+  <p class="form-footer">Already have an account? <a href="{% url 'login' %}">Sign in</a>.</p>
+{% endblock %}

@@ -63,6 +63,26 @@ the demo, not course files.
 python manage.py reset_demo   # drops all data and stored files, re-applies migrations, seeds
 ```
 
+## Sign in with Google
+
+Optional. With `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` unset, the button is hidden and
+password sign-in works as usual.
+
+To switch it on, create an OAuth client in Google Cloud Console (APIs & Services -> Credentials ->
+Create credentials -> OAuth client ID -> Web application) and register the callback address:
+
+```
+http://localhost:8000/auth/google/callback/        development
+https://<your-render-host>/auth/google/callback/   production
+```
+
+Put the client ID and secret in `.env` locally, and in the Render dashboard for the deployed site.
+
+Signing in with Google also **confirms the email address**: Google tells us whether it has verified
+it, and that is what sets `email_verified_at` ([ADR-0012](docs/adr/0012-google-sign-in.md)). An
+account created with a password becomes verified the first time it signs in with Google at the same
+address. The email's domain must still belong to a registered university either way.
+
 ## The AI tutor
 
 The tutor is a Streamlit app in [`tutor_chat/`](tutor_chat/), adapted from

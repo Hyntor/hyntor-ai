@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,10 +16,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # One .env at the repository root serves the site, the management commands and the tests.
 load_dotenv(BASE_DIR / ".env")
 
-# Development default. Production must set DJANGO_SECRET_KEY; deploy checks refuse to start without it.
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key-do-not-use-in-production")
-
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+
+# `or` rather than a get() default: .env.example ships DJANGO_SECRET_KEY="", and a default only
+# applies when the variable is absent, not when it is present and empty. Copying .env.example
+# therefore produced an empty SECRET_KEY, which breaks CSRF and every signed value in the project.
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or ""
+if not SECRET_KEY:
+    if not DEBUG:
+        # Never fall back to a published key on a real deployment. Stop instead.
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG=0")
+    SECRET_KEY = "dev-only-insecure-key-do-not-use-in-production"
 
 ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
@@ -120,6 +128,13 @@ SESSION_TTL_DAYS = 7
 # service, so neither address has to be copied by hand.
 TUTOR_CHAT_HOST = os.environ.get("TUTOR_CHAT_HOST", "")
 TUTOR_CHAT_URL = os.environ.get("TUTOR_CHAT_URL") or (f"https://{TUTOR_CHAT_HOST}" if TUTOR_CHAT_HOST else "")
+
+# Sign in with Google (ADR-0012). Empty means the button is hidden and the rest of sign-in works
+# normally. Create the credentials in Google Cloud Console and register the callback address:
+#   http://localhost:8000/auth/google/callback/   (development)
+#   https://<your-render-host>/auth/google/callback/   (production)
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 
 # Shared with the tutor service; it signs the hand-off token that identifies the signed-in user.
 # Falling back to SECRET_KEY keeps local development working with no extra setup. In production the

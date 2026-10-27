@@ -10,3 +10,8 @@ psycopg[binary]==3.3.6
 # Production server and static files (ADR-0011).
 gunicorn==26.2.0
 whitenoise==6.12.0
+
+# Sign in with Google (ADR-0012). google-auth verifies the ID token's signature against Google's
+# published keys; requests makes the server-to-server token exchange.
+google-auth==2.62.0
+requests==2.34.2

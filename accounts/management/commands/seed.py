@@ -23,7 +23,22 @@ SEED_FILES_DIR = Path(settings.BASE_DIR) / "seed" / "files"
 # Documented in the README; demo accounts only, never a real credential.
 DEFAULT_PASSWORD = "hyntor-demo-password"  # noqa: S105
 
-UNIVERSITY = {"name": "Demo University", "email_domain": "example.edu"}
+# Every domain whose addresses may create an account. Signup (ACC-3) accepts an address only if the
+# part after its last "@" matches one of these rows, so this list IS the registry - there is no
+# domain hardcoded anywhere in the signup code.
+#
+# The match is exact, which is why go.olemiss.edu has its own row: Ole Miss issues student addresses
+# at go.olemiss.edu and staff addresses at olemiss.edu, and one row would not cover the other. The
+# consequence is that they are two separate universities as far as the data model is concerned.
+# Whether subdomains should instead resolve to one university is ACC-1's call (#14).
+UNIVERSITIES = [
+    {"name": "Demo University", "email_domain": "example.edu"},
+    {"name": "University of Mississippi", "email_domain": "olemiss.edu"},
+    {"name": "University of Mississippi (students)", "email_domain": "go.olemiss.edu"},
+]
+
+# The demo accounts, course and materials below all belong to this one.
+DEMO_DOMAIN = "example.edu"
 
 USERS = [
     ("admin", "admin@example.edu", "Avery Admin", PlatformRole.ADMIN),
@@ -62,9 +77,14 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options) -> None:
-        university, _ = University.objects.get_or_create(
-            email_domain=UNIVERSITY["email_domain"], defaults={"name": UNIVERSITY["name"]}
-        )
+        for entry in UNIVERSITIES:
+            # get_or_create leaves an existing row alone, so re-running never renames a university
+            # someone has since corrected by hand.
+            University.objects.get_or_create(
+                email_domain=entry["email_domain"], defaults={"name": entry["name"]}
+            )
+
+        university = University.objects.get(email_domain=DEMO_DOMAIN)
 
         users: dict[str, User] = {}
         for key, email, display_name, role in USERS:

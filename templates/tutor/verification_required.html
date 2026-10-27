@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm your email - Hyntor{% endblock %}
+
+{% block content %}
+  <h1>Confirm your email first</h1>
+  <p class="lede">
+    The AI tutor is available once we know you can read mail at {{ current_user.email }}.
+  </p>
+  <p>
+    Email confirmation is not switched on yet, so an administrator verifies accounts by hand for now.
+    Everything else in Hyntor works normally in the meantime.
+  </p>
+  <p><a class="button" href="{% url 'home' %}">Back to Hyntor</a></p>
+{% endblock %}

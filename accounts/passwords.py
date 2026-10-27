@@ -8,6 +8,16 @@ _hasher = PasswordHasher()
 # Shown on the signup form and enforced on signup (ACC-3).
 MIN_PASSWORD_LENGTH = 10
 
+# Stored for accounts that sign in through Google and have no password of their own. It is not a
+# valid Argon2 hash, so verify_password can never match it, whatever is typed. Django uses the same
+# "!" convention for the same reason.
+UNUSABLE_PASSWORD_HASH = "!"  # noqa: S105 - deliberately not a password, and not a valid hash
+
+
+def has_usable_password(password_hash: str) -> bool:
+    """False for an account that can only sign in through Google."""
+    return password_hash != UNUSABLE_PASSWORD_HASH
+
 
 def validate_password(password: str) -> str | None:
     """Check a new password against Hyntor's rules.
