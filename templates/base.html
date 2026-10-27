@@ -5,11 +5,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Hyntor{% endblock %}</title>
+    <meta name="description" content="{% block description %}A course library and AI tutor that hints before it answers.{% endblock %}" />
     <link rel="stylesheet" href="{% static 'css/app.css' %}" />
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="{% url 'home' %}">Hyntor</a>
+      <a class="brand" href="{% url 'home' %}">
+        <span class="brand-mark" aria-hidden="true">H</span>
+        Hyntor
+      </a>
+
       {% if current_user %}
         <form class="header-form" method="post" action="{% url 'logout' %}">
           {% csrf_token %}
@@ -17,10 +22,15 @@
           <button class="button button-quiet" type="submit">Sign out</button>
         </form>
       {% else %}
-        <a href="{% url 'login' %}">Sign in</a>
+        <nav class="header-nav">
+          <a class="button button-quiet" href="{% url 'login' %}">Sign in</a>
+          <a class="button" href="{% url 'signup' %}">Create account</a>
+        </nav>
       {% endif %}
     </header>
 
-    <main class="page">{% block content %}{% endblock %}</main>
+    <main class="{% block main_class %}page{% endblock %}">{% block content %}{% endblock %}</main>
+
+    <footer class="site-footer">Hyntor &middot; a course library and AI tutor</footer>
   </body>
 </html>

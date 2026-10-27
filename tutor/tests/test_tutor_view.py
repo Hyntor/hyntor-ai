@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from accounts.models import University, User
 from accounts.passwords import hash_password
@@ -25,6 +26,7 @@ class TutorHandoffTests(TestCase):
             email="learner1@example.edu",
             display_name="Lee Learner",
             password_hash=hash_password(PASSWORD),
+            email_verified_at=timezone.now(),
         )
 
     def sign_in(self):
@@ -79,3 +81,35 @@ class TutorHandoffTests(TestCase):
         response = self.client.get(reverse("tutor-chat"))
 
         self.assertRedirects(response, reverse("login"))
+
+
+class UnverifiedUserTests(TestCase):
+    """Anyone can create an account at a registered domain, so sign-in alone must not spend quota."""
+
+    def setUp(self):
+        university = University.objects.create(name="Demo University", email_domain="example.edu")
+        self.user = User.objects.create(
+            university=university,
+            email="new@example.edu",
+            display_name="New Person",
+            password_hash=hash_password(PASSWORD),
+        )
+        self.client.post(reverse("login"), {"email": self.user.email, "password": PASSWORD})
+
+    @override_settings(TUTOR_CHAT_URL=TUTOR_URL, HANDOFF_SECRET=SECRET)
+    def test_an_unverified_account_gets_no_token(self):
+        response = self.client.get(reverse("tutor-chat"))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("Location", response)
+
+    @override_settings(TUTOR_CHAT_URL=TUTOR_URL, HANDOFF_SECRET=SECRET)
+    def test_verifying_the_account_opens_the_tutor(self):
+        """The same account, once verified, is handed through."""
+        self.user.email_verified_at = timezone.now()
+        self.user.save()
+
+        response = self.client.get(reverse("tutor-chat"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("?t=", response["Location"])

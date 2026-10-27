@@ -1,17 +1,138 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <h1>Hyntor</h1>
-  <p class="lede">A course library and tutor that hints before it answers.</p>
+{% block title %}Hyntor - a course library and AI tutor{% endblock %}
 
+{% block main_class %}landing{% endblock %}
+
+{% block content %}
   {% if current_user %}
-    <p>
-      Signed in as <strong>{{ current_user.display_name }}</strong> ({{ current_user.email }}) at
-      {{ current_user.university.name }}.
-    </p>
-    <p><a class="button" href="{% url 'tutor-chat' %}">Open the AI tutor</a></p>
+
+    {# Signed in: skip the sales pitch and show what this person can do next. #}
+    <div class="welcome">
+      <h1>Welcome back, {{ current_user.display_name }}</h1>
+      <p class="lede">
+        Signed in as {{ current_user.email }} at {{ current_user.university.name }}.
+      </p>
+      {% if current_user.is_verified %}
+        <div class="welcome-actions">
+          <a class="button" href="{% url 'tutor-chat' %}">Open the AI tutor</a>
+        </div>
+      {% else %}
+        {# Don't offer a button that would only refuse them; say what is missing instead. #}
+        <p class="hint">
+          The AI tutor opens once your email address is confirmed. An administrator does that by hand
+          for now.
+        </p>
+      {% endif %}
+    </div>
+
   {% else %}
-    <p>Placeholder home page. Features land here as the backlog moves.</p>
-    <p><a class="button" href="{% url 'login' %}">Sign in</a></p>
+
+    <section class="hero">
+      <h1>Your course materials, and a tutor that makes you think</h1>
+      <p>
+        Hyntor keeps everything a course has ever shared in one place, across every term, and answers your
+        questions from those materials - with a hint first, not the solution.
+      </p>
+      <div class="hero-actions">
+        <a class="button" href="{% url 'signup' %}">Create an account</a>
+        <a class="button button-outline" href="{% url 'login' %}">Sign in</a>
+      </div>
+      <p class="hero-note">Free for students. Sign up with your university email address.</p>
+    </section>
+
+    <section class="section">
+      <h2>What Hyntor does</h2>
+      <p class="section-lede">Four things, and it tries to do them well.</p>
+
+      <ul class="features">
+        <li class="feature">
+          <div class="feature-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          </div>
+          <h3>A library that outlives the term</h3>
+          <p>
+            Notes, slides and handouts stay with the course, not the semester. Join in the spring and you
+            still get everything shared last fall.
+          </p>
+        </li>
+
+        <li class="feature">
+          <div class="feature-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <h3>A tutor that hints first</h3>
+          <p>
+            Ask about an assignment and you get a nudge, then a bigger one, then a worked explanation - in
+            that order. It is built to help you learn, not to hand in your homework.
+          </p>
+        </li>
+
+        <li class="feature">
+          <div class="feature-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6" />
+              <path d="M9 13h6M9 17h3" />
+            </svg>
+          </div>
+          <h3>Answers you can check</h3>
+          <p>
+            Every answer points at the material it came from, so you can open the page and read it yourself.
+            When a question goes beyond the course files, Hyntor says so.
+          </p>
+        </li>
+
+        <li class="feature">
+          <div class="feature-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h3>Your university only</h3>
+          <p>
+            Accounts are tied to a registered university email domain, and a course's materials are visible
+            only to people enrolled in that course.
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <h2>How it works</h2>
+        <p class="section-lede">Three steps from sign-up to a useful answer.</p>
+
+        <ol class="steps">
+          <li class="step">
+            <h3>Sign up and join a course</h3>
+            <p>Use your university email address, then join the courses you are enrolled in this term.</p>
+          </li>
+          <li class="step">
+            <h3>Share what you have</h3>
+            <p>Upload PDFs, Word documents and slide decks. Hyntor reads the text and indexes it.</p>
+          </li>
+          <li class="step">
+            <h3>Ask the tutor</h3>
+            <p>Pick concept mode to understand an idea, or assignment mode for graded work.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="callout">
+      <h2>Ready to start?</h2>
+      <p>Creating an account takes a university email address and about a minute.</p>
+      <div class="hero-actions">
+        <a class="button" href="{% url 'signup' %}">Create an account</a>
+        <a class="button button-outline" href="{% url 'login' %}">I already have one</a>
+      </div>
+    </section>
+
   {% endif %}
 {% endblock %}

@@ -10,8 +10,10 @@
 #
 # Two values are NOT in this file and must be set by hand in the Render dashboard, because secrets
 # do not belong in a repository (sync: false below means "ask me for this"):
-#   SEED_PASSWORD   on hyntor-web    password for the demo accounts on the public site
-#   GEMINI_API_KEY  on hyntor-tutor
+#   SEED_PASSWORD         on hyntor-web    password for the demo accounts on the public site
+#   GOOGLE_CLIENT_ID      on hyntor-web    sign in with Google (optional; hides the button if unset)
+#   GOOGLE_CLIENT_SECRET  on hyntor-web
+#   GEMINI_API_KEY        on hyntor-tutor
 #
 # Continuous deployment (#13): both services deploy from main, and only after GitHub reports that
 # the ci workflow passed on that commit (autoDeployTrigger: checksPass). A red build never ships.
@@ -70,6 +72,13 @@ services:
       # is unset. Seeding is idempotent and only sets passwords on accounts it creates, so changing
       # this later does not change existing accounts.
       - key: SEED_PASSWORD
+        sync: false
+      # Sign in with Google (ADR-0012). Set both in the dashboard; leaving them unset only hides
+      # the button. The callback address to register with Google is
+      # https://<this service's host>/auth/google/callback/
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
         sync: false
       # No GEMINI_API_KEY here on purpose: the Django service never calls the model.
 

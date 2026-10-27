@@ -13,7 +13,7 @@ from pathlib import Path
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
-from accounts.management.commands.seed import DEFAULT_PASSWORD, MATERIALS, USERS
+from accounts.management.commands.seed import DEFAULT_PASSWORD, MATERIALS, UNIVERSITIES, USERS
 from accounts.models import University, User
 from accounts.passwords import verify_password
 from courses.models import Course, Enrollment
@@ -48,7 +48,7 @@ class SeedCommandTests(TestCase):
         self.assertEqual(
             row_counts(),
             {
-                "universities": 1,
+                "universities": len(UNIVERSITIES),
                 "users": len(USERS),
                 "courses": 1,
                 "enrollments": 4,
@@ -110,3 +110,28 @@ class SeedCommandTests(TestCase):
         self.seed()
 
         self.assertTrue((self.storage_dir / material.storage_key).exists())
+
+
+class RegisteredDomainTests(TestCase):
+    """The University rows ARE the signup allowlist, so the seed decides who can create an account."""
+
+    def setUp(self):
+        self._storage = tempfile.TemporaryDirectory()
+        self.addCleanup(self._storage.cleanup)
+        with override_settings(STORAGE_DIR=Path(self._storage.name)):
+            call_command("seed", stdout=StringIO())
+
+    def test_it_registers_every_listed_domain(self):
+        stored = set(University.objects.values_list("email_domain", flat=True))
+
+        self.assertEqual(stored, {u["email_domain"] for u in UNIVERSITIES})
+
+    def test_both_ole_miss_domains_are_registered(self):
+        """Staff addresses live at olemiss.edu and student addresses at go.olemiss.edu. The lookup
+        matches the domain exactly, so each needs its own row."""
+        for domain in ["olemiss.edu", "go.olemiss.edu"]:
+            with self.subTest(domain=domain):
+                self.assertTrue(University.objects.filter(email_domain=domain).exists())
+
+    def test_an_unregistered_domain_is_still_refused(self):
+        self.assertFalse(University.objects.filter(email_domain="gmail.com").exists())

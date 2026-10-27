@@ -19,6 +19,13 @@ def tutor_chat(request: HttpRequest) -> HttpResponse:
     if not request.user:
         return redirect("login")
 
+    # Signed in is not enough. Anyone can create an account at a registered domain, and nothing has
+    # checked that they can read mail at that address. Every reply here spends the team's AI quota,
+    # so the tutor is the one place that requires a verified address (T6, N9). The rest of the site
+    # stays open to unverified accounts.
+    if not request.user.is_verified:
+        return render(request, "tutor/verification_required.html", status=403)
+
     # No tutor service configured (local development, or before the second service is deployed).
     # Say so plainly rather than redirecting to an empty address (G6).
     if not settings.TUTOR_CHAT_URL:

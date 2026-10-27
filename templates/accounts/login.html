@@ -20,4 +20,8 @@
 
     <button class="button" type="submit">Sign in</button>
   </form>
+
+  {% include "accounts/_google_button.html" %}
+
+  <p class="form-footer">New to Hyntor? <a href="{% url 'signup' %}">Create an account</a>.</p>
 {% endblock %}

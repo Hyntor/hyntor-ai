@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Google sign-in unavailable - Hyntor{% endblock %}
+
+{% block content %}
+  <h1>Google sign-in is not set up</h1>
+  <p class="lede">This Hyntor site has no Google credentials configured, so that button cannot be used.</p>
+  <p>You can still sign in with an email address and password.</p>
+  <p><a class="button" href="{% url 'login' %}">Back to sign in</a></p>
+{% endblock %}
