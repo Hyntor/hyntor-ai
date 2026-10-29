@@ -271,3 +271,54 @@ class GoogleAccountPasswordLoginTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(Session.objects.count(), 0)
+
+
+@override_settings(**GOOGLE)
+class GoogleSubjectTests(TestCase):
+    """The Google id is stored so a returning person is recognised even if their address changed."""
+
+    def setUp(self):
+        self.university = University.objects.create(name="Demo University", email_domain="example.edu")
+
+    def start_flow(self):
+        response = self.client.get(reverse("google-start"))
+        return parse_qs(urlparse(response["Location"]).query)["state"][0]
+
+    def sign_in_with(self, who):
+        state = self.start_flow()
+        with patch("accounts.views.google_oauth.exchange_code_for_identity", return_value=who):
+            return self.client.get(reverse("google-callback"), {"state": state, "code": "a-code"})
+
+    def test_a_new_account_stores_the_google_id(self):
+        self.sign_in_with(identity(subject="google-abc"))
+
+        self.assertEqual(User.objects.get(email="lee@example.edu").google_subject, "google-abc")
+
+    def test_an_existing_password_account_is_linked_on_first_google_sign_in(self):
+        user = User.objects.create(
+            university=self.university,
+            email="lee@example.edu",
+            display_name="Lee Learner",
+            password_hash=hash_password(PASSWORD),
+        )
+
+        self.sign_in_with(identity(subject="google-abc"))
+
+        user.refresh_from_db()
+        self.assertEqual(user.google_subject, "google-abc")
+
+    def test_a_changed_email_still_finds_the_same_account(self):
+        """The point of storing the id: Google reports a new address, we recognise the person."""
+        user = User.objects.create(
+            university=self.university,
+            email="lee.old@example.edu",
+            display_name="Lee Learner",
+            password_hash=UNUSABLE_PASSWORD_HASH,
+            google_subject="google-abc",
+            email_verified_at=timezone.now(),
+        )
+
+        self.sign_in_with(identity(email="lee.new@example.edu", subject="google-abc"))
+
+        self.assertEqual(User.objects.count(), 1, "a changed address must not create a second account")
+        self.assertEqual(Session.objects.filter(user=user).count(), 1)

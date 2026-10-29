@@ -35,6 +35,11 @@ class User(models.Model):
     password_hash = models.CharField(max_length=255)
     platform_role = models.CharField(max_length=20, choices=PlatformRole, default=PlatformRole.LEARNER)
     email_verified_at = models.DateTimeField(null=True, blank=True)
+    # Google's stable identifier for the account (the `sub` claim), set the first time someone signs
+    # in with Google. An email address can change - a name change, a new alias, a graduating student
+    # moving from go.olemiss.edu to olemiss.edu - but `sub` never does, so it is the reliable way to
+    # recognise a returning person. Null for accounts that have only ever used a password.
+    google_subject = models.CharField(max_length=255, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

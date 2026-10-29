@@ -228,7 +228,13 @@ def google_callback_view(request: HttpRequest) -> HttpResponse:
         # Same rule as a password signup: Google proves who you are, not that you may join (A1).
         return refuse(UNKNOWN_DOMAIN, status=403)
 
-    user = User.objects.filter(email=identity.email).first()
+    # Look for the Google id first. It is stable, so someone whose address changed is still
+    # recognised as the same person rather than being handed a second account. Matching on email is
+    # the fallback, and it is what links a Google sign-in to an existing password account.
+    user = User.objects.filter(google_subject=identity.subject).first()
+    if user is None:
+        user = User.objects.filter(email=identity.email).first()
+
     if user is None:
         with transaction.atomic():
             user = User.objects.create(
@@ -238,12 +244,22 @@ def google_callback_view(request: HttpRequest) -> HttpResponse:
                 # No password: this account signs in through Google only.
                 password_hash=UNUSABLE_PASSWORD_HASH,
                 email_verified_at=timezone.now(),
+                google_subject=identity.subject,
             )
-    elif not user.email_verified_at:
-        # An existing password account proves itself by signing in with Google once. This is how
-        # verification happens for everyone: there is no separate confirmation email.
-        user.email_verified_at = timezone.now()
-        user.save(update_fields=["email_verified_at"])
+    else:
+        changed = []
+        if not user.google_subject:
+            # First Google sign-in for an account that already existed. Remember the id now so the
+            # next sign-in does not depend on the address still being the same.
+            user.google_subject = identity.subject
+            changed.append("google_subject")
+        if not user.email_verified_at:
+            # An existing password account proves itself by signing in with Google once. This is how
+            # verification happens for everyone: there is no separate confirmation email.
+            user.email_verified_at = timezone.now()
+            changed.append("email_verified_at")
+        if changed:
+            user.save(update_fields=changed)
 
     _session, token = start_session(user)
     response = redirect("home")
