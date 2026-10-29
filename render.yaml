@@ -61,12 +61,12 @@ services:
       # below, so the two always agree and the value never appears in the repository.
       - key: HANDOFF_SECRET
         generateValue: true
-      # Render fills in the tutor's own hostname, so the address is never copied by hand.
-      - key: TUTOR_CHAT_HOST
-        fromService:
-          type: web
-          name: hyntor-tutor
-          property: host
+      # The tutor's PUBLIC address, because the browser is what follows this redirect.
+      # Do NOT use `fromService ... property: host` here: that yields Render's internal hostname,
+      # which only resolves inside Render's private network. A browser sent there gets "page not
+      # found". Update this if the tutor service is ever renamed.
+      - key: TUTOR_CHAT_URL
+        value: https://hyntor-tutor.onrender.com
       # Password for the demo accounts the build seeds (there is no signup page yet). Not the README's
       # demo password: this site is public and one of the accounts is an admin. The build stops if it
       # is unset. Seeding is idempotent and only sets passwords on accounts it creates, so changing
@@ -110,13 +110,10 @@ services:
           type: web
           name: hyntor-web
           envVarKey: HANDOFF_SECRET
-      # Used for the "sign in to Hyntor" link shown to anyone arriving without a valid token.
-      # Render supplies the hostname; the app turns it into an https:// address.
-      - key: HYNTOR_SITE_HOST
-        fromService:
-          type: web
-          name: hyntor-web
-          property: host
+      # The site's PUBLIC address: these links are clicked in a browser, so the internal
+      # hostname from `fromService ... property: host` would not resolve (see TUTOR_CHAT_URL above).
+      - key: HYNTOR_SITE_URL
+        value: https://hyntor-web.onrender.com
       # Set this in the Render dashboard. Until it is set, the tutor says it is not configured
       # rather than crashing.
       - key: GEMINI_API_KEY
