@@ -1,0 +1,27 @@
+# Makes the tutor look like the rest of Hyntor. The colours are the same ones defined as CSS
+# variables in static/css/app.css, so the two pages match when a user is redirected between them.
+#
+#   --blue       #4169E1   royal blue: buttons, links, accents
+#   --blue-tint  #EEF2FD   sidebar and chat bubbles
+#   --ink        #1A1F36   body text
+#   --line       #DDE1E9   borders
+#
+# Streamlit reads this file on start-up, so restart the app after changing it.
+
+[theme]
+base = "light"
+
+primaryColor = "#4169E1"
+backgroundColor = "#FFFFFF"
+# Used behind the sidebar, chat messages and most widgets.
+secondaryBackgroundColor = "#EEF2FD"
+textColor = "#1A1F36"
+linkColor = "#4169E1"
+borderColor = "#DDE1E9"
+
+font = "sans serif"
+# Matches the 10px --radius on the site's buttons and inputs.
+baseRadius = "10px"
+
+[server]
+headless = true

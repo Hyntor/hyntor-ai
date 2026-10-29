@@ -24,7 +24,7 @@ try:
 except ImportError:  # pragma: no cover - streamlit is a dev/tutor dependency, not a site one
     AppTest = None
 
-APP = str(Path(__file__).resolve().parents[2] / "tutor_chat" / "AI_Chatbot.py")
+APP = str(Path(__file__).resolve().parents[2] / "tutor_chat" / "tutor.py")
 SECRET = "a-test-handoff-secret"
 
 
