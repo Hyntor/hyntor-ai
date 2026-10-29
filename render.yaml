@@ -95,7 +95,7 @@ services:
     # --server.address 0.0.0.0 makes it reachable from outside the container; $PORT is assigned by
     # Render; --server.headless stops Streamlit trying to open a browser on the server.
     startCommand: >-
-      streamlit run tutor_chat/AI_Chatbot.py
+      streamlit run tutor_chat/tutor.py
       --server.port $PORT
       --server.address 0.0.0.0
       --server.headless true
