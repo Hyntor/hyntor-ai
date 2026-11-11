@@ -6,6 +6,13 @@ from accounts.models import University, User
 
 
 class Course(models.Model):
+    """One course at one university, e.g. CSCI 3087 at Ole Miss.
+
+    A course outlives the semester: there is no term field here on purpose (G2), so materials
+    shared last autumn are still there for someone who joins in the spring. Which term a person
+    belongs to is recorded on Enrollment instead.
+    """
+
     university = models.ForeignKey(University, on_delete=models.CASCADE, related_name="courses")
     code = models.CharField(max_length=32)
     title = models.CharField(max_length=200)
@@ -26,6 +33,8 @@ class Course(models.Model):
 
 
 class CourseRole(models.TextChoices):
+    """What a person may do inside one course, as opposed to across the site."""
+
     MEMBER = "member", "Member"
     MAINTAINER = "maintainer", "Maintainer"
 

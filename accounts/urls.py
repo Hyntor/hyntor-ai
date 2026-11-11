@@ -1,3 +1,9 @@
+"""Routes for getting into and out of an account.
+
+Two ways in - a password or Google - and one way out. The Google pair is a round trip: the browser
+leaves for Google at /auth/google/ and comes back to /auth/google/callback/.
+"""
+
 from django.urls import path
 
 from accounts import views

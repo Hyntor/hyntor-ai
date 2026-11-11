@@ -7,12 +7,20 @@ from courses.models import Course
 
 
 class FileKind(models.TextChoices):
+    """The file types the library accepts. Each has an extractor in ADR-0006."""
+
     PDF = "pdf", "PDF"
     DOCX = "docx", "Word document"
     PPTX = "pptx", "PowerPoint slides"
 
 
 class ExtractionStatus(models.TextChoices):
+    """How far a material has got through text extraction.
+
+    A material is pending until its text has been read and split into chunks. Only indexed
+    materials can be cited by the tutor; failed ones keep the file but have no chunks.
+    """
+
     PENDING = "pending", "Pending"
     INDEXED = "indexed", "Indexed"
     FAILED = "failed", "Failed"
@@ -52,6 +60,7 @@ class Material(models.Model):
 
     @property
     def is_removed(self) -> bool:
+        """Removed materials stay in the table for the audit trail but are never listed (E3)."""
         return self.removed_at is not None
 
 

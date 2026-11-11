@@ -14,6 +14,12 @@ TOKEN_BYTES = 32  # 256 bits
 
 
 def hash_token(token: str) -> str:
+    """The value stored for a session token.
+
+    SHA-256 rather than Argon2: this is a 256-bit random value, not a guessable password, so a
+    fast hash is enough and keeps every request cheap. The point is that a stolen database row
+    cannot be replayed as a cookie.
+    """
     return hashlib.sha256(token.encode()).hexdigest()
 
 
@@ -44,6 +50,11 @@ def end_session(token: str) -> None:
 
 
 def set_session_cookie(response: HttpResponse, token: str) -> None:
+    """Put the signed-in cookie on a response.
+
+    HttpOnly keeps JavaScript away from the token, SameSite=Lax stops another site posting as this
+    user, and Secure is on everywhere except local development, where there is no HTTPS.
+    """
     response.set_cookie(
         settings.SESSION_COOKIE_NAME,
         token,
@@ -55,4 +66,5 @@ def set_session_cookie(response: HttpResponse, token: str) -> None:
 
 
 def clear_session_cookie(response: HttpResponse) -> None:
+    """Remove the cookie on sign-out. The session row is deleted separately, by end_session."""
     response.delete_cookie(settings.SESSION_COOKIE_NAME)

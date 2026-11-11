@@ -1,3 +1,8 @@
+{# One URL, two pages.
+
+   Signed in: the student's dashboard - their course cards, and the dropdown to join another.
+   Signed out: the landing page that explains Hyntor to someone who has never seen it.
+   hyntor/views.py decides which, and only queries courses for the signed-in case. #}
 {% extends "base.html" %}
 
 {% block title %}Hyntor - a course library and AI tutor{% endblock %}
@@ -7,21 +12,68 @@
 {% block content %}
   {% if current_user %}
 
-    {# Signed in: skip the sales pitch and show what this person can do next. #}
+    {# Signed in: this is the student's dashboard, not a sales pitch. #}
     <div class="welcome">
       <h1>Welcome back, {{ current_user.display_name }}</h1>
-      <p class="lede">
-        Signed in as {{ current_user.email }} at {{ current_user.university.name }}.
-      </p>
-      {% if current_user.is_verified %}
-        <div class="welcome-actions">
-          <a class="button" href="{% url 'tutor-chat' %}">Open the AI tutor</a>
-        </div>
-      {% else %}
-        {# Don't offer a button that would only refuse them; say what is missing instead. #}
+      <p class="lede">{{ current_user.university.name }} &middot; {{ term }}</p>
+
+      {% if not current_user.is_verified %}
         <p class="hint">
           The AI tutor opens once your email address is confirmed. An administrator does that by hand
-          for now.
+          for now. You can still join courses in the meantime.
+        </p>
+      {% endif %}
+
+      <h2 class="section-title">Your courses</h2>
+
+      {% if my_courses %}
+        <ul class="course-cards">
+          {% for course in my_courses %}
+            <li class="course-card">
+              <a class="course-card-link" href="{% url 'course-tutor' course.id %}">
+                <span class="course-code">{{ course.code }}</span>
+                <span class="course-title">{{ course.title }}</span>
+                <span class="course-go">Open the tutor &rarr;</span>
+              </a>
+              <form method="post" action="{% url 'course-leave' %}" class="course-card-leave">
+                {% csrf_token %}
+                <input type="hidden" name="course_id" value="{{ course.id }}" />
+                <button class="button button-quiet" type="submit">Leave</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="empty">
+          You have not joined any courses for {{ term }} yet. Pick one below to get started.
+        </p>
+      {% endif %}
+
+      <h2 class="section-title">Join a course</h2>
+
+      {% if courses_to_join %}
+        <form method="post" action="{% url 'course-join' %}" class="join-form">
+          {% csrf_token %}
+          <label class="sr-only" for="course_id">Course</label>
+          <select id="course_id" name="course_id" required>
+            <option value="" disabled selected>Choose a course...</option>
+            {% for level, courses in courses_to_join %}
+              <optgroup label="{{ level }}">
+                {% for course in courses %}
+                  <option value="{{ course.id }}">{{ course.code }} &mdash; {{ course.title }}</option>
+                {% endfor %}
+              </optgroup>
+            {% endfor %}
+          </select>
+          <button class="button" type="submit">Join</button>
+        </form>
+      {% else %}
+        <p class="empty">
+          {% if my_courses %}
+            You have joined every course available at {{ current_user.university.name }}.
+          {% else %}
+            No courses are available at {{ current_user.university.name }} yet.
+          {% endif %}
         </p>
       {% endif %}
     </div>

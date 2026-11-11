@@ -57,10 +57,17 @@ def make_token(
     user_id: int | str,
     email: str,
     display_name: str,
+    course_id: int | str | None = None,
+    course_code: str | None = None,
     ttl_seconds: int = DEFAULT_TTL_SECONDS,
     now: float | None = None,
 ) -> str:
-    """Build a signed token identifying one user. Called by Django."""
+    """Build a signed token identifying one user, and optionally which course they opened.
+
+    The course travels inside the signed payload rather than as a separate query parameter, so the
+    tutor can trust it: Django has already checked that this person is enrolled in that course, and
+    the signature means nobody can swap the id on the way.
+    """
     if not secret:
         raise ValueError("A hand-off secret is required")
 
@@ -71,6 +78,10 @@ def make_token(
         "name": display_name,
         "exp": int(issued_at + ttl_seconds),
     }
+    if course_id is not None:
+        payload["course_id"] = str(course_id)
+    if course_code:
+        payload["course_code"] = course_code
     # sort_keys and the compact separators keep the encoding identical on both sides.
     body = _b64encode(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode())
     return f"{body}.{_signature(secret, body)}"

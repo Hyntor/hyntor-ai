@@ -35,6 +35,11 @@ def validate_password(password: str) -> str | None:
 
 
 def hash_password(password: str) -> str:
+    """Turn a password into an Argon2id hash for storage.
+
+    A new random salt each time, stored inside the returned string, so two people with the same
+    password get different hashes.
+    """
     return _hasher.hash(password)
 
 

@@ -93,6 +93,11 @@ st.caption(f"Signed in as {hyntor_user.get('name') or hyntor_user.get('email')}"
 
 
 def extract_file_data(file) -> dict:
+    """Read an uploaded file into plain text.
+
+    PDFs go through pypdf page by page; anything else is decoded as UTF-8. A scanned PDF has no
+    text layer and yields an empty string, which the caller warns about.
+    """
     file.seek(0)
     if file.name.lower().endswith(".pdf"):
         reader = pypdf.PdfReader(file)
@@ -109,6 +114,7 @@ KNOWLEDGE_BASE_DIR = "knowledge_base"
 
 
 def list_knowledge_files() -> list[str]:
+    """The knowledge base files available to answer from, by name."""
     if not os.path.isdir(KNOWLEDGE_BASE_DIR):
         return []
     return sorted(f for f in os.listdir(KNOWLEDGE_BASE_DIR) if f.endswith(".txt"))
@@ -160,6 +166,7 @@ def get_knowledge_file(prompt: str) -> tuple[str, int]:
 
 
 def load_knowledge_file(filename: str) -> str:
+    """Read one knowledge base file. Callers must pass a name from list_knowledge_files."""
     with open(os.path.join(KNOWLEDGE_BASE_DIR, filename), encoding="utf-8") as f:
         return f.read()
 
@@ -210,6 +217,11 @@ system_instruction = (
 
 
 def summarize_conversation(messages: list[dict]) -> tuple[str, int]:
+    """Condense the conversation so far into a short summary, and report what it cost.
+
+    Called every ten messages so the history sent to the model stays small: the summary replaces
+    the older turns rather than being added to them.
+    """
     conversation_text = "\n".join(f"{msg['role']}: {msg['content']}" for msg in messages)
     summary_prompt = f"Summarize the following conversation concisely:\n{conversation_text}\nSummary:"
 
