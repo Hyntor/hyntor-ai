@@ -1,8 +1,9 @@
 """The Hyntor tutor: a simple chat page.
 
 This is the page the Django site hands people to. It checks the signed hand-off token, shows a chat
-box, and answers with Gemini. Course materials, hint tiers and citations are not here yet - that is
-TUT-3 and TUT-7. The richer retrieval chatbot in AI_Chatbot.py is kept for that work.
+box, and answers with Gemini. A student can attach one PDF or TXT file to the session (#62);
+course materials, hint tiers and citations are not here yet - that is TUT-3 and TUT-7. The
+richer retrieval chatbot in AI_Chatbot.py is kept for that work.
 
 Run it alongside the Django site:
 
@@ -11,6 +12,7 @@ Run it alongside the Django site:
 
 import os
 
+import attachments
 import handoff
 import streamlit as st
 from dotenv import load_dotenv
@@ -90,7 +92,7 @@ def ai_is_configured() -> bool:
     return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
 
 
-def answer(question: str, history: list[dict]) -> str:
+def answer(question: str, history: list[dict], document: str = "") -> str:
     """The tutor's reply. Without a key the page still works, and says why it cannot answer (G6)."""
     if not ai_is_configured():
         return (
@@ -104,11 +106,14 @@ def answer(question: str, history: list[dict]) -> str:
         {"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
         for m in history
     ]
+    # The attachment rides on the system instruction, not the conversation, so the student cannot
+    # overwrite it with a later message.
+    instruction = SYSTEM_PROMPT + document
     try:
         response = gemini_client().models.generate_content(
             model=MODEL,
             contents=contents,
-            config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
+            config=types.GenerateContentConfig(system_instruction=instruction),
         )
         return response.text or "I did not manage to answer that. Try rephrasing it?"
     except Exception as exc:  # noqa: BLE001 - any provider failure must stay inside the chat
@@ -124,6 +129,30 @@ st.caption(f"Signed in as {user.get('name') or user.get('email')}")
 if not ai_is_configured():
     st.warning("The AI is not connected on this site yet. The chat works, but answers are placeholders.")
 
+# One attachment per session (TUT-10, #62). Its text is cached on the session so a rerun - which
+# Streamlit does on every keystroke - does not re-parse the file.
+uploaded = st.file_uploader("Attach a PDF or TXT file (optional)", type=("pdf", "txt"))
+
+document = ""
+if uploaded is not None:
+    cache_key = f"{uploaded.name}:{uploaded.size}"
+    if st.session_state.get("attachment_key") != cache_key:
+        try:
+            text = attachments.extract_text(uploaded.name, uploaded.getvalue())
+        except attachments.RejectedFile as exc:
+            st.session_state.attachment = None
+            st.session_state.attachment_error = str(exc)
+        else:
+            st.session_state.attachment = attachments.document_block(uploaded.name, text)
+            st.session_state.attachment_error = ""
+        st.session_state.attachment_key = cache_key
+
+    if st.session_state.get("attachment_error"):
+        st.warning(f"{st.session_state.attachment_error} You can still chat normally.")
+    else:
+        document = st.session_state.get("attachment") or ""
+        st.success(f"Reading from {uploaded.name}. Ask about it below.")
+
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": GREETING}]
 
@@ -135,7 +164,7 @@ if question := st.chat_input("Ask about your course..."):
     st.chat_message("user").write(question)
 
     with st.chat_message("assistant"), st.spinner("Thinking..."):
-        reply = answer(question, st.session_state.messages)
+        reply = answer(question, st.session_state.messages, document)
         st.write(reply)
 
     st.session_state.messages.append({"role": "assistant", "content": reply})
