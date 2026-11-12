@@ -16,6 +16,7 @@ from django.utils import timezone
 from accounts.models import PlatformRole, University, User
 from accounts.passwords import hash_password
 from courses.models import Course, CourseRole, Enrollment
+from courses.terms import current_term
 from library.models import ExtractionStatus, FileKind, Material, MaterialChunk
 from tutor.models import TutorMode, TutorSession
 
@@ -79,7 +80,9 @@ def an_enrollment(user, course, **fields) -> Enrollment:
     return Enrollment.objects.create(
         user=user,
         course=course,
-        term=fields.pop("term", "2026-FA"),
+        # The term the code under test looks for. A hardcoded string would pass today and
+        # start failing in January, which is the worst kind of test failure.
+        term=fields.pop("term", current_term()),
         course_role=fields.pop("course_role", CourseRole.MEMBER),
         **fields,
     )

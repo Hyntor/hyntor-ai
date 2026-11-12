@@ -7,9 +7,12 @@ is asking and then redirect with a signed token. /tutor/ opens it with no course
 
 from django.urls import path
 
-from tutor import views
+from tutor import api, views
 
 urlpatterns = [
     path("tutor/", views.tutor_chat, name="tutor-chat"),
     path("courses/<int:course_id>/tutor/", views.course_tutor, name="course-tutor"),
+    path("api/tutor/sessions/", api.sessions, name="tutor-sessions"),
+    path("api/tutor/sessions/<int:session_id>/", api.session_detail, name="tutor-session"),
+    path("api/tutor/sessions/<int:session_id>/messages/", api.send, name="tutor-send"),
 ]
