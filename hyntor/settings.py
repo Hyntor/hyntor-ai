@@ -123,6 +123,10 @@ STORAGE_DIR = Path(os.environ.get("STORAGE_DIR") or BASE_DIR / ".storage")
 SESSION_COOKIE_NAME = "hyntor_session"
 SESSION_TTL_DAYS = 7
 
+# Django's runner plus the no-network rule, so no test can reach the real AI provider (FND-4,
+# #9, N9). See tests/network.py.
+TEST_RUNNER = "tests.runner.HyntorTestRunner"
+
 # The Streamlit tutor service (ADR-0011). Empty means "no tutor configured", and /tutor/ says so
 # instead of redirecting nowhere (G6). On Render, TUTOR_CHAT_HOST is filled in from the other
 # service, so neither address has to be copied by hand.
