@@ -56,6 +56,28 @@ class FakeAiProvider:
             raise AssertionError("the provider was never called")
         return self.calls[-1].prompt
 
+    def as_reply_for(self):
+        """This fake as a `reply_for(session, history)` callable, the shape tutor/provider.py has.
+
+        The provider module (TUT-1, #25) is not written yet, so the tutor calls a plain function
+        rather than an object. Rather than keep a second fake for that shape, this wraps the same
+        one: the script and the recorded calls work exactly as they do for generate().
+
+        The last student message becomes the prompt, and the conversation so far is kept on the
+        call as options['history'], so a test can assert on what the tutor was given:
+
+            provider = FakeAiProvider(default='ok')
+            with mock.patch('tutor.api.provider.reply_for', provider.as_reply_for()):
+                ...
+            self.assertEqual(provider.calls[0].options['history'], [...])
+        """
+
+        def reply_for(session, history):
+            prompt = history[-1]["content"] if history else ""
+            return self.generate(prompt, session=session, history=history)
+
+        return reply_for
+
     def generate(self, prompt: str, *, system_instruction: str = "", **options) -> str:
         self.calls.append(Call(prompt=prompt, system_instruction=system_instruction, options=options))
 
