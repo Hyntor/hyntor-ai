@@ -110,6 +110,11 @@ def _connect():
 
 
 def embed_text(client, text: str, task_type: str = "RETRIEVAL_DOCUMENT") -> list[float]:
+    """Turn text into a vector so memories can be compared by meaning rather than wording.
+
+    task_type tells Gemini which side of the comparison this is: stored memories are documents,
+    a live question is a query. Using the wrong one makes the scores less reliable.
+    """
     response = client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=text,
@@ -129,6 +134,7 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
 
 
 def add_memory(user_key: str, memory_type: str, content: str, embedding: list[float]) -> None:
+    """Store one new memory for this user."""
     now = datetime.now(UTC).isoformat()
     with _connect() as conn:
         conn.execute(
@@ -141,6 +147,7 @@ def add_memory(user_key: str, memory_type: str, content: str, embedding: list[fl
 def update_memory(
     user_key: str, memory_id: int, memory_type: str, content: str, embedding: list[float]
 ) -> None:
+    """Rewrite one of this user's memories, re-embedded so it can still be found by meaning."""
     now = datetime.now(UTC).isoformat()
     with _connect() as conn:
         # Matching on user_key as well as id means a forged id cannot edit someone else's memory.
@@ -152,6 +159,7 @@ def update_memory(
 
 
 def delete_memory(user_key: str, memory_id: int) -> None:
+    """Delete one of this user's memories. Matching on user_key too is what makes it theirs."""
     with _connect() as conn:
         conn.execute("DELETE FROM memories WHERE id = ? AND user_key = ?", (memory_id, user_key))
 
@@ -163,6 +171,7 @@ def delete_all_memories(user_key: str) -> None:
 
 
 def get_all_memories(user_key: str) -> list[dict]:
+    """Every memory belonging to this user, newest first within each type, for the sidebar."""
     with _connect() as conn:
         rows = conn.execute(
             "SELECT id, memory_type, content, updated_at FROM memories WHERE user_key = ? "
@@ -173,6 +182,12 @@ def get_all_memories(user_key: str) -> list[dict]:
 
 
 def retrieve_relevant_memories(client, user_key: str, query: str, top_k: int = 5) -> list[dict]:
+    """The memories most related to this question.
+
+    Every one of this user's memories is scored by cosine similarity against the question and the
+    best few are returned. Fine for a personal store of tens of memories; a real index would be
+    needed before it grew to thousands.
+    """
     with _connect() as conn:
         rows = conn.execute(
             "SELECT id, memory_type, content, embedding FROM memories WHERE user_key = ?",
@@ -195,6 +210,11 @@ def retrieve_relevant_memories(client, user_key: str, query: str, top_k: int = 5
 
 
 def format_memories_for_prompt(memories: list[dict]) -> str:
+    """Render memories as the block of text added to the system prompt.
+
+    Returns an empty string when there are none, so the prompt gains nothing rather than an empty
+    heading the model might try to explain.
+    """
     if not memories:
         return ""
     lines = "\n".join(f"- ({m['memory_type']}) {m['content']}" for m in memories)
@@ -205,6 +225,12 @@ def format_memories_for_prompt(memories: list[dict]) -> str:
 
 
 def extract_memories(client, user_key: str, conversation_messages: list[dict]) -> None:
+    """Ask the model what is worth remembering from a conversation, and apply its answer.
+
+    It returns add, update and delete operations rather than plain text, so it can correct an
+    earlier memory that has since become wrong. Anything unparseable is ignored: a bad reply must
+    not wipe someone's memories.
+    """
     existing = get_all_memories(user_key)
     existing_text = (
         "\n".join(f"[id={m['id']}] ({m['memory_type']}) {m['content']}" for m in existing)

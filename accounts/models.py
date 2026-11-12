@@ -23,11 +23,20 @@ class University(models.Model):
 
 
 class PlatformRole(models.TextChoices):
+    """What a person may do across the whole site, as opposed to within one course."""
+
     LEARNER = "learner", "Learner"
     ADMIN = "admin", "Administrator"
 
 
 class User(models.Model):
+    """Someone with a Hyntor account.
+
+    Deliberately a plain model rather than django.contrib.auth's User: the ERD specifies these
+    fields, and installing the auth app would add permission and group tables the ERD does not
+    have. Passwords are hashed in accounts/passwords.py; sign-in lives in accounts/views.py.
+    """
+
     university = models.ForeignKey(University, on_delete=models.PROTECT, related_name="users")
     email = models.EmailField(max_length=255, unique=True)
     display_name = models.CharField(max_length=100)
@@ -42,10 +51,12 @@ class User(models.Model):
 
     @property
     def is_admin(self) -> bool:
+        """Administrators manage universities and take down material; learners do not."""
         return self.platform_role == PlatformRole.ADMIN
 
     @property
     def is_verified(self) -> bool:
+        """Whether we know this person can read mail at their address. Gates the AI tutor."""
         return self.email_verified_at is not None
 
     @staticmethod

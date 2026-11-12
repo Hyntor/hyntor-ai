@@ -50,11 +50,16 @@ class SignedInHomePageTests(TestCase):
         )
         self.client.post(reverse("login"), {"email": self.user.email, "password": PASSWORD})
 
-    def test_it_greets_the_signed_in_user_and_links_to_the_tutor(self):
+    def test_it_greets_the_signed_in_user(self):
         response = self.client.get(reverse("home"))
 
         self.assertContains(response, "Lee Learner")
-        self.assertContains(response, reverse("tutor-chat"))
+
+    def test_it_offers_a_way_to_join_a_course(self):
+        """With no courses joined, the dashboard points the student at joining one."""
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "Join a course")
 
     def test_it_drops_the_sign_up_pitch(self):
         """Someone with an account should not be asked to create one."""
@@ -76,9 +81,8 @@ class UnverifiedHomePageTests(TestCase):
         )
         self.client.post(reverse("login"), {"email": self.user.email, "password": PASSWORD})
 
-    def test_the_tutor_is_not_offered_until_the_email_is_confirmed(self):
-        """Better to explain what is missing than to show a button that refuses them."""
+    def test_it_says_the_tutor_needs_a_confirmed_email(self):
+        """Better to explain what is missing than to let them click into a refusal."""
         response = self.client.get(reverse("home"))
 
-        self.assertNotContains(response, reverse("tutor-chat"))
         self.assertContains(response, "email address is confirmed")

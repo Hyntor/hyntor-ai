@@ -6,6 +6,7 @@ Idempotent (E2): every write is a get_or_create on a natural key, so a second ru
 """
 
 import hashlib
+import json
 from pathlib import Path
 
 from django.conf import settings
@@ -20,6 +21,12 @@ from library.models import FileKind, Material
 
 SEED_FILES_DIR = Path(settings.BASE_DIR) / "seed" / "files"
 
+# The real Ole Miss computer science catalogue, transcribed from the university's course listing.
+# Students join these from the home page (CRS-2). Kept as data rather than code so updating the
+# catalogue is a change to one JSON file.
+CSCI_COURSES_FILE = Path(settings.BASE_DIR) / "seed" / "csci_courses.json"
+OLE_MISS_DOMAIN = "go.olemiss.edu"
+
 # Documented in the README; demo accounts only, never a real credential.
 DEFAULT_PASSWORD = "hyntor-demo-password"  # noqa: S105
 
@@ -27,14 +34,12 @@ DEFAULT_PASSWORD = "hyntor-demo-password"  # noqa: S105
 # part after its last "@" matches one of these rows, so this list IS the registry - there is no
 # domain hardcoded anywhere in the signup code.
 #
-# The match is exact, which is why go.olemiss.edu has its own row: Ole Miss issues student addresses
-# at go.olemiss.edu and staff addresses at olemiss.edu, and one row would not cover the other. The
-# consequence is that they are two separate universities as far as the data model is concerned.
-# Whether subdomains should instead resolve to one university is ACC-1's call (#14).
+# Hyntor is for students, so only the student domain is registered. Ole Miss issues student
+# addresses at go.olemiss.edu; staff addresses at olemiss.edu are deliberately NOT accepted. That
+# also keeps every Ole Miss course under one university, which is what course membership needs.
 UNIVERSITIES = [
     {"name": "Demo University", "email_domain": "example.edu"},
-    {"name": "University of Mississippi", "email_domain": "olemiss.edu"},
-    {"name": "University of Mississippi (students)", "email_domain": "go.olemiss.edu"},
+    {"name": "University of Mississippi", "email_domain": "go.olemiss.edu"},
 ]
 
 # The demo accounts, course and materials below all belong to this one.
@@ -66,9 +71,16 @@ MATERIALS = [
 
 
 class Command(BaseCommand):
+    """Loads the demo data and the CSCI catalogue.
+
+    Run by hand during development and automatically on every Render deploy, so it must be safe
+    to run repeatedly: every write is a get_or_create on a natural key.
+    """
+
     help = "Load the demo university, accounts, course and materials. Safe to run more than once."
 
     def add_arguments(self, parser) -> None:
+        """Lets the deploy pass a real password instead of the published demo one."""
         parser.add_argument(
             "--password",
             default=DEFAULT_PASSWORD,
@@ -77,6 +89,12 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options) -> None:
+        """Create everything, in dependency order: universities, then users, then the course and
+        its enrollments, then the materials that belong to it.
+
+        Wrapped in a transaction by the decorator, so a failure part way leaves no half-built
+        demo behind.
+        """
         for entry in UNIVERSITIES:
             # get_or_create leaves an existing row alone, so re-running never renames a university
             # someone has since corrected by hand.
@@ -85,6 +103,16 @@ class Command(BaseCommand):
             )
 
         university = University.objects.get(email_domain=DEMO_DOMAIN)
+
+        # The CSCI catalogue belongs to Ole Miss, not the demo university.
+        ole_miss = University.objects.get(email_domain=OLE_MISS_DOMAIN)
+        catalogue = json.loads(CSCI_COURSES_FILE.read_text(encoding="utf-8"))
+        for entry in catalogue:
+            # get_or_create on (university, code) leaves a renamed course alone, so a title someone
+            # corrected by hand is not overwritten on the next deploy.
+            Course.objects.get_or_create(
+                university=ole_miss, code=entry["code"], defaults={"title": entry["title"]}
+            )
 
         users: dict[str, User] = {}
         for key, email, display_name, role in USERS:
@@ -134,4 +162,4 @@ class Command(BaseCommand):
             )
 
         emails = ", ".join(email for _, email, _, _ in USERS)
-        self.stdout.write(self.style.SUCCESS(f"Seeded. Sign in as {emails}"))
+        self.stdout.write(self.style.SUCCESS(f"Seeded {len(catalogue)} CSCI courses. Sign in as {emails}"))

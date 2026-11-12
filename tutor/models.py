@@ -8,16 +8,30 @@ from library.models import MaterialChunk
 
 
 class TutorMode(models.TextChoices):
+    """Which rules the tutor answers under.
+
+    Concept mode explains an idea freely. Assignment mode is for graded work, where the tutor
+    hints before it answers (D3).
+    """
+
     CONCEPT = "concept", "Concept"
     ASSIGNMENT = "assignment", "Assignment"
 
 
 class MessageAuthorRole(models.TextChoices):
+    """Who wrote a message: the student, or the tutor."""
+
     STUDENT = "student", "Student"
     ASSISTANT = "assistant", "Assistant"
 
 
 class TutorSession(models.Model):
+    """One conversation between a student and the tutor about one course.
+
+    last_activity_at is updated on every message, so a session list can show the most recent
+    conversation first without counting messages.
+    """
+
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="tutor_sessions")
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tutor_sessions")
     mode = models.CharField(max_length=20, choices=TutorMode)

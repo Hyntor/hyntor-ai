@@ -89,6 +89,11 @@ def gemini_client():
 
 
 def ai_is_configured() -> bool:
+    """Whether a Gemini key is available.
+
+    Checked rather than assumed, so the page still renders a working chat box with a clear
+    placeholder reply when no key is set (G6). A missing key is a setup state, not a crash.
+    """
     return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
 
 

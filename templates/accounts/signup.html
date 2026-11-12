@@ -1,3 +1,6 @@
+{# Create an account. The real checks are in accounts/views.py: the browser-side `required` and
+   `minlength` attributes are a convenience, not the rule. The email domain must belong to a
+   registered university, which is what ties a student to their courses. #}
 {% extends "base.html" %}
 
 {% block title %}Create an account - Hyntor{% endblock %}

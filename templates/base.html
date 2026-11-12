@@ -1,3 +1,8 @@
+{# The shell every page sits inside: head, site header, main content block, footer.
+
+   The header shows either the signed-in person's name and a Sign out button, or the two ways in.
+   `current_user` comes from accounts/context_processors.py, so no view has to pass it.
+   `main_class` lets a page widen itself: forms use the narrow column, the landing page does not. #}
 {% load static %}
 <!doctype html>
 <html lang="en">

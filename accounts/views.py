@@ -37,6 +37,11 @@ EMAIL_TAKEN = "An account already exists for that email address. Sign in instead
 
 @require_http_methods(["GET", "POST"])
 def login_view(request: HttpRequest) -> HttpResponse:
+    """Sign in with an email address and password (ACC-2).
+
+    GET renders the form; POST checks the password and starts a session. Every failure returns the
+    same message and status, so the page cannot be used to discover which addresses have accounts.
+    """
     if request.user:
         return redirect("home")
 
@@ -66,6 +71,11 @@ def login_view(request: HttpRequest) -> HttpResponse:
 
 @require_http_methods(["POST"])
 def logout_view(request: HttpRequest) -> HttpResponse:
+    """Sign out (A6).
+
+    Deletes the session row as well as clearing the cookie, so a copy of the cookie taken earlier
+    stops working too. POST only, so a stray image tag cannot sign someone out.
+    """
     token = request.COOKIES.get("hyntor_session")
     if token:
         end_session(token)
