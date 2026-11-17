@@ -35,6 +35,7 @@
                 <span class="course-title">{{ course.title }}</span>
                 <span class="course-go">Open the tutor &rarr;</span>
               </a>
+              <a class="course-card-library" href="{% url 'course-library' course.id %}">Library</a>
               <form method="post" action="{% url 'course-leave' %}" class="course-card-leave">
                 {% csrf_token %}
                 <input type="hidden" name="course_id" value="{{ course.id }}" />
