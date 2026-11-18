@@ -580,161 +580,127 @@ a:focus-visible {
   border: 0;
 }
 
-/* ---------------------------------------------------------------- dotted background */
+/* ---------------------------------------------------------------- course library (CRS-4) */
 
-/* A faint blue dot grid behind the whole page, for texture.
-
-   Drawn with a repeating radial-gradient rather than an image: no file to load, it stays crisp at
-   any zoom, and the colour comes from the same palette as everything else. Painted on body::before
-   so it sits behind the content without affecting layout; `fixed` keeps it still while scrolling. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: #fff;
-  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.5px);
-  background-size: 22px 22px;
+.breadcrumb {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
 }
 
-/* Sections that need to read as solid sit on their own background, so the dots show through only
-   the open areas of the page. */
-.site-header,
-.course-card,
-.feature,
-.band,
-.empty,
-.course-picker {
-  position: relative;
+.note {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
-/* ---------------------------------------------------------------- profile */
+.library-filter {
+  margin-bottom: 1rem;
+}
 
-.profile-details {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.5rem 1.5rem;
-  margin: 1.5rem 0 0;
-  padding: 1.25rem 1.5rem;
-  border: 1px solid var(--blue-edge);
+.library-filter input {
+  flex: 1 1 18rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--blue-tint);
-}
-
-.profile-details dt {
-  font-weight: 600;
-  color: var(--blue-deep);
-}
-
-.profile-details dd {
-  margin: 0;
+  font-size: 1rem;
+  font-family: inherit;
   color: var(--ink);
 }
 
-.profile-courses {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0;
+.library-filter input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.materials,
+.roster {
+  margin: 0 0 1rem;
   padding: 0;
   list-style: none;
 }
 
-.profile-courses a {
-  display: block;
-  padding: 0.75rem 1rem;
+.material {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.material-title {
+  font-weight: 600;
+  color: var(--blue-deep);
+}
+
+/* Own line under the title, so long titles never push it off a narrow screen. */
+.material-meta {
+  flex-basis: 100%;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.badge {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--blue-edge);
+  border-radius: 999px;
+  background: var(--blue-tint);
+  color: var(--blue-deep);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  border-color: var(--line);
+  background: #f4f5f8;
+  color: var(--muted);
+}
+
+.badge-failed {
+  border-color: var(--error);
+  background: #fff;
+  color: var(--error);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.roster li {
+  padding: 0.3rem 0;
+}
+
+.course-card-library {
+  display: inline-block;
+  margin: -0.5rem 1.25rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- upload (LIB-1) */
+
+.upload-form {
+  max-width: 32rem;
+  margin-top: 0;
+}
+
+.upload-form .button {
+  align-self: flex-start;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.success {
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--blue-edge);
   border-radius: var(--radius);
   background: var(--blue-tint);
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.profile-courses a:hover {
-  border-color: var(--blue);
-}
-
-.profile-back {
-  margin-top: 2rem;
-}
-
-/* The circle of initials next to the name in the header. */
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 50%;
-  background: var(--blue);
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-a.signed-in {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
   color: var(--blue-deep);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-a.signed-in:hover {
-  color: var(--blue);
-}
-
-/* ---------------------------------------------------------------- course picker */
-
-.course-picker {
-  max-height: 22rem;
-  overflow-y: auto;
-  margin: 0 0 1.25rem;
-  padding: 0.5rem 1rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-}
-
-.course-picker-level {
-  position: sticky;
-  top: 0;
-  margin: 0;
-  padding: 0.6rem 0 0.4rem;
-  background: #fff;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.course-option {
-  display: grid;
-  grid-template-columns: auto auto 1fr;
-  align-items: baseline;
-  gap: 0.6rem;
-  padding: 0.35rem 0.4rem;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 400;
-  cursor: pointer;
-}
-
-.course-option:hover {
-  background: var(--blue-tint);
-}
-
-.course-option input {
-  margin: 0;
-  accent-color: var(--blue);
-}
-
-.course-option-code {
-  font-weight: 600;
-  color: var(--blue-deep);
-}
-
-.course-option-title {
-  color: var(--muted);
 }

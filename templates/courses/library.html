@@ -1,0 +1,108 @@
+{# The course library (CRS-4, #24): every term's materials, a title filter, upload (LIB-1, #21), roster.
+
+   courses/views.py render_library passes `page` (one page of materials, newest first), `query`,
+   `members` (this term), `past_contributors`, `enrolled_this_term`, `max_mb`, and the result of an
+   upload: `uploaded` on success, or `upload_error` (with `existing` for a duplicate). #}
+{% extends "base.html" %}
+
+{% block title %}{{ course.code }} library - Hyntor{% endblock %}
+
+{% block main_class %}landing{% endblock %}
+
+{% block content %}
+  <div class="welcome">
+    <p class="breadcrumb"><a href="{% url 'home' %}">&larr; Your courses</a></p>
+    <h1>{{ course.code }}</h1>
+    <p class="lede">{{ course.title }}</p>
+
+    {% if enrolled_this_term %}
+      <p><a class="button" href="{% url 'course-tutor' course.id %}">Open the tutor</a></p>
+    {% endif %}
+
+    <h2 class="section-title">Library</h2>
+    <p class="note">Everything students have shared in this course, from every term.</p>
+
+    <form method="get" action="" class="join-form library-filter" role="search">
+      <label class="sr-only" for="q">Filter by title</label>
+      <input id="q" type="search" name="q" value="{{ query }}" placeholder="Filter by title..." />
+      <button class="button" type="submit">Filter</button>
+      {% if query %}<a class="button button-quiet" href="?">Clear</a>{% endif %}
+    </form>
+
+    {# Upload results sit here, above the list, so they are on screen without scrolling. #}
+    {% if upload_error %}
+      <p class="error" role="alert">
+        {{ upload_error }}
+        {% if existing %}<a href="?q={{ existing.title|urlencode }}#material-{{ existing.pk }}">See it in the library</a>.{% endif %}
+      </p>
+    {% elif uploaded %}
+      <p class="success" role="status">
+        Uploaded &ldquo;{{ uploaded.title }}&rdquo;. Its text is read for the tutor next, so it shows as Pending until then.
+      </p>
+    {% endif %}
+
+    {% if page.object_list %}
+      <ul class="materials">
+        {% for material in page.object_list %}
+          <li class="material" id="material-{{ material.pk }}">
+            <span class="material-title">{{ material.title }}</span>
+            <span class="badge badge-{{ material.extraction_status }}">{{ material.get_extraction_status_display }}</span>
+            <span class="material-meta">
+              {{ material.get_file_kind_display }} &middot; {{ material.uploader.display_name }}
+              &middot; <time datetime="{{ material.uploaded_at|date:'c' }}">{{ material.uploaded_at|date:"j M Y" }}</time>
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% if page.has_other_pages %}
+        <nav class="pagination" aria-label="Library pages">
+          {% if page.has_previous %}
+            <a class="button button-quiet" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}">&larr; Newer</a>
+          {% endif %}
+          <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+          {% if page.has_next %}
+            <a class="button button-quiet" href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}">Older &rarr;</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% elif query %}
+      <p class="empty">No materials have a title containing &ldquo;{{ query }}&rdquo;.</p>
+    {% else %}
+      <p class="empty">
+        Nothing has been shared in this course yet. <a href="#upload">Share the first file</a> and every
+        student who takes {{ course.code }}, this term or later, can use it.
+      </p>
+    {% endif %}
+
+    {# Upload (LIB-1, #21). Posts to courses/views.py upload_material; id="upload" is the empty state's link. #}
+    <h2 class="section-title" id="upload">Share a file</h2>
+    <form method="post" action="{% url 'material-upload' course.id %}" enctype="multipart/form-data" class="stack upload-form">
+      {% csrf_token %}
+      <label for="file">File</label>
+      <input id="file" type="file" name="file" accept=".pdf,.docx,.pptx" required />
+      <label for="title">Title <span class="optional">(optional: the file name is used if blank)</span></label>
+      <input id="title" type="text" name="title" maxlength="200" />
+      <p class="note">PDF, Word (.docx) or PowerPoint (.pptx), up to {{ max_mb }} MB.</p>
+      <button class="button" type="submit">Upload</button>
+    </form>
+
+    <h2 class="section-title">Who is here</h2>
+    {% if members %}
+      <ul class="roster">
+        {% for enrollment in members %}
+          <li>
+            {{ enrollment.user.display_name }}
+            {% if enrollment.course_role == "maintainer" %}<span class="badge">Maintainer</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="note">Nobody has joined {{ course.code }} for {{ term }} yet.</p>
+    {% endif %}
+    <p class="note">
+      {{ members|length }} member{{ members|length|pluralize }} in {{ term }}
+      &middot; {{ past_contributors }} past-term contributor{{ past_contributors|pluralize }}
+    </p>
+  </div>
+{% endblock %}
