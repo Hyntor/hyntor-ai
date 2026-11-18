@@ -241,5 +241,11 @@ class UploadTests(TestCase):
         self.assertEqual(self.upload(client=browser).status_code, 403)
         self.assertEqual(Material.objects.count(), 0)
 
-    def test_get_is_not_allowed(self):
-        self.assertEqual(self.student.get(reverse("material-upload", args=[self.course.pk])).status_code, 405)
+    def test_a_plain_visit_goes_back_to_the_library(self):
+        """After a refused upload the address bar shows this URL; reloading or pasting it is a GET."""
+        response = self.student.get(reverse("material-upload", args=[self.course.pk]))
+        self.assertRedirects(response, reverse("course-library", args=[self.course.pk]))
+
+    def test_other_methods_are_not_allowed(self):
+        response = self.student.put(reverse("material-upload", args=[self.course.pk]))
+        self.assertEqual(response.status_code, 405)
