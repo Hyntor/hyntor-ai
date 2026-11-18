@@ -191,14 +191,19 @@ def course_library(request: HttpRequest, course_id: int) -> HttpResponse:
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["GET", "POST"])
 def upload_material(request: HttpRequest, course_id: int) -> HttpResponse:
     """Add a PDF, Word or PowerPoint file to the course library (LIB-1, #21).
 
     CSRF is still checked, one step later: Django's CSRF middleware reads request.POST, which parses
     the upload, and the size-limit handler has to be installed before that happens. This is the
     pattern Django's documentation gives for custom upload handlers.
+
+    A refused upload shows its error at this address, so a refresh, bookmark or copied link lands
+    here with a GET. That visit goes back to the library rather than to a 405 error page.
     """
+    if request.method == "GET":
+        return redirect("course-library", course_id=course_id)
     request.upload_handlers.insert(0, uploads.SizeLimitUploadHandler(request))
     return _upload_material(request, course_id)
 
