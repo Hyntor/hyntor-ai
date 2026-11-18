@@ -40,6 +40,7 @@ def tutor_chat(request: HttpRequest) -> HttpResponse:
     if not settings.TUTOR_CHAT_URL:
         return render(request, "tutor/not_configured.html", status=503)
 
+    #makes a signed token with the user's id, email, and display name, then redirects to the tutor chat URL with the token as a query parameter
     token = make_token(
         settings.HANDOFF_SECRET,
         user_id=request.user.pk,

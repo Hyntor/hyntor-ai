@@ -1,5 +1,5 @@
 """University, User and Session: the account half of the ERD (M2 section 4)."""
-
+#describes the database tables
 from django.db import models
 
 

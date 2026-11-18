@@ -27,7 +27,7 @@ if not SECRET_KEY:
         # Never fall back to a published key on a real deployment. Stop instead.
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG=0")
     SECRET_KEY = "dev-only-insecure-key-do-not-use-in-production"
-
+#who can reach the site
 ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
 ]

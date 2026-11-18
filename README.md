@@ -96,7 +96,7 @@ Run it locally alongside the Django site, in a second terminal:
 export GEMINI_API_KEY="your-key"            # or set it in .env
 export HANDOFF_SECRET="any-shared-string"   # must match the Django site's value
 export HYNTOR_SITE_URL="http://localhost:8000"
-streamlit run tutor_chat/AI_Chatbot.py --server.port 8501
+streamlit run tutor_chat/tutor.py --server.port 8501
 ```
 
 Then set `TUTOR_CHAT_URL="http://localhost:8501"` in `.env`, restart Django, sign in, and use the

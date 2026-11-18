@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% comment %}
+  The signed-in person's own account page, reached from their name in the header.
+
+  Read-only: who they are, which university they belong to, and the courses they are in this
+  term. Joining and leaving still happen on the home page.
+{% endcomment %}
+{% block title %}Your profile - Hyntor{% endblock %}
+
+{% block main_class %}landing{% endblock %}
+
+{% block content %}
+  <div class="welcome">
+    <h1>Your profile</h1>
+
+    <dl class="profile-details">
+      <dt>Name</dt>
+      <dd>{{ current_user.display_name }}</dd>
+
+      <dt>Email</dt>
+      <dd>{{ current_user.email }}</dd>
+
+      <dt>University</dt>
+      <dd>{{ current_user.university.name }}</dd>
+
+      <dt>Email confirmed</dt>
+      <dd>
+        {% if current_user.is_verified %}
+          Yes
+        {% else %}
+          Not yet &mdash; the AI tutor opens once it is confirmed
+        {% endif %}
+      </dd>
+    </dl>
+
+    <h2 class="section-title">Your courses &middot; {{ term }}</h2>
+
+    {% if my_courses %}
+      <ul class="profile-courses">
+        {% for course in my_courses %}
+          <li>
+            <a href="{% url 'course-tutor' course.id %}">
+              <strong>{{ course.code }}</strong> &mdash; {{ course.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">You have not joined any courses for {{ term }} yet.</p>
+    {% endif %}
+
+    <p class="profile-back"><a class="button" href="{% url 'home' %}">Back to your courses</a></p>
+  </div>
+{% endblock %}

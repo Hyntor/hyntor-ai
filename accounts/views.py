@@ -62,7 +62,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
     # with the same message as a wrong password, revealing nothing about how the account signs in.
     if not verify_password(user.password_hash, password):
         return render(request, "accounts/login.html", failed, status=401)
-
+    #successfully signed in 
     _session, token = start_session(user)
     response = redirect("home")
     set_session_cookie(response, token)
@@ -76,7 +76,7 @@ def logout_view(request: HttpRequest) -> HttpResponse:
     Deletes the session row as well as clearing the cookie, so a copy of the cookie taken earlier
     stops working too. POST only, so a stray image tag cannot sign someone out.
     """
-    token = request.COOKIES.get("hyntor_session")
+    token = request.COOKIES.get(settings.SESSION_COOKIE_NAME)
     if token:
         end_session(token)
     response = redirect("login")
@@ -104,7 +104,7 @@ def signup_view(request: HttpRequest) -> HttpResponse:
     # Keep what they typed so a refused form does not make them start again. The password is never
     # sent back to the browser.
     context |= {"email": email, "display_name": display_name}
-
+    #every rejected signup returns the same page with an error message, so no one can discover which addresses are registered
     def refuse(message: str) -> HttpResponse:
         return render(request, "accounts/signup.html", context | {"error": message}, status=400)
 
@@ -260,3 +260,28 @@ def google_callback_view(request: HttpRequest) -> HttpResponse:
     set_session_cookie(response, token)
     response.delete_cookie(GOOGLE_FLOW_COOKIE)
     return response
+
+
+@require_http_methods(["GET"])
+def profile_view(request: HttpRequest) -> HttpResponse:
+    """The signed-in person's own details and the courses they are in.
+
+    Read-only for now: it answers "who am I signed in as, and what am I enrolled in". Editing a
+    name or leaving a course happens elsewhere.
+    """
+    if not request.user:
+        return redirect("login")
+
+    # Imported here rather than at module scope: accounts is the lower-level app, and importing
+    # courses at the top would make the two import each other.
+    from courses.terms import current_term, term_label
+    from courses.views import joined_courses
+
+    return render(
+        request,
+        "accounts/profile.html",
+        {
+            "my_courses": joined_courses(request.user),
+            "term": term_label(current_term()),
+        },
+    )

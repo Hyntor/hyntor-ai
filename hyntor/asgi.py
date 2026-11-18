@@ -6,7 +6,7 @@ It exposes the ASGI callable as a module-level variable named ``application``.
 For more information on this file, see
 https://docs.djangoproject.com/en/6.1/howto/deployment/asgi/
 """
-
+#Django generates both asgi and wsgi files for deployment but we only use wsgi
 import os
 
 from django.core.asgi import get_asgi_application

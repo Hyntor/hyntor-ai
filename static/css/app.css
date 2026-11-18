@@ -10,6 +10,7 @@
   --blue-deep: #1b2a6b; /* headings */
   --blue-tint: #eef2fd; /* section backgrounds */
   --blue-edge: #d4ddf9; /* borders on tinted areas */
+  --dot: #c7d4f7; /* the background dot grid: visible as texture, too faint to read as content */
 
   --ink: #1a1f36; /* body text */
   --muted: #5b6577; /* secondary text */
@@ -44,7 +45,8 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.85rem 1.5rem;
-  border-bottom: 1px solid var(--line);
+  background: var(--blue-tint);
+  border-bottom: 1px solid var(--blue-edge);
 }
 
 .brand {
@@ -491,9 +493,9 @@ a:focus-visible {
 /* The card is the link. The Leave button sits on top of it, so it needs its own stacking context. */
 .course-card {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1px solid var(--blue-edge);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--blue-tint);
   box-shadow: var(--shadow);
 }
 
@@ -576,4 +578,163 @@ a:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ---------------------------------------------------------------- dotted background */
+
+/* A faint blue dot grid behind the whole page, for texture.
+
+   Drawn with a repeating radial-gradient rather than an image: no file to load, it stays crisp at
+   any zoom, and the colour comes from the same palette as everything else. Painted on body::before
+   so it sits behind the content without affecting layout; `fixed` keeps it still while scrolling. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #fff;
+  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+/* Sections that need to read as solid sit on their own background, so the dots show through only
+   the open areas of the page. */
+.site-header,
+.course-card,
+.feature,
+.band,
+.empty,
+.course-picker {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------- profile */
+
+.profile-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1.5rem;
+  margin: 1.5rem 0 0;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--blue-edge);
+  border-radius: var(--radius);
+  background: var(--blue-tint);
+}
+
+.profile-details dt {
+  font-weight: 600;
+  color: var(--blue-deep);
+}
+
+.profile-details dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.profile-courses {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-courses a {
+  display: block;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--blue-edge);
+  border-radius: var(--radius);
+  background: var(--blue-tint);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.profile-courses a:hover {
+  border-color: var(--blue);
+}
+
+.profile-back {
+  margin-top: 2rem;
+}
+
+/* The circle of initials next to the name in the header. */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+a.signed-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--blue-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.signed-in:hover {
+  color: var(--blue);
+}
+
+/* ---------------------------------------------------------------- course picker */
+
+.course-picker {
+  max-height: 22rem;
+  overflow-y: auto;
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 1rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.course-picker-level {
+  position: sticky;
+  top: 0;
+  margin: 0;
+  padding: 0.6rem 0 0.4rem;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.course-option {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.course-option:hover {
+  background: var(--blue-tint);
+}
+
+.course-option input {
+  margin: 0;
+  accent-color: var(--blue);
+}
+
+.course-option-code {
+  font-weight: 600;
+  color: var(--blue-deep);
+}
+
+.course-option-title {
+  color: var(--muted);
 }

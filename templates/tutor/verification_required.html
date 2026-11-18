@@ -1,7 +1,9 @@
-{# Shown when a signed-in student opens the tutor without a confirmed email address. Every reply
-   costs AI quota, so the tutor is the one place that requires verification. #}
 {% extends "base.html" %}
 
+{% comment %}
+  Shown when a signed-in student opens the tutor without a confirmed email address. Every reply
+  costs AI quota, so the tutor is the one place that requires verification.
+{% endcomment %}
 {% block title %}Confirm your email - Hyntor{% endblock %}
 
 {% block content %}
