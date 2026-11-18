@@ -1,5 +1,6 @@
 """University, User and Session: the account half of the ERD (M2 section 4)."""
-#describes the database tables
+
+# Describes the database tables. Each class below is one table; each field is one column.
 from django.db import models
 
 

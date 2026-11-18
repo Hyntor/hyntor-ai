@@ -62,7 +62,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
     # with the same message as a wrong password, revealing nothing about how the account signs in.
     if not verify_password(user.password_hash, password):
         return render(request, "accounts/login.html", failed, status=401)
-    #successfully signed in 
+    # successfully signed in
     _session, token = start_session(user)
     response = redirect("home")
     set_session_cookie(response, token)
@@ -104,7 +104,9 @@ def signup_view(request: HttpRequest) -> HttpResponse:
     # Keep what they typed so a refused form does not make them start again. The password is never
     # sent back to the browser.
     context |= {"email": email, "display_name": display_name}
-    #every rejected signup returns the same page with an error message, so no one can discover which addresses are registered
+
+    # Every rejected signup returns the same page with an error message, so no one can discover
+    # which addresses are registered.
     def refuse(message: str) -> HttpResponse:
         return render(request, "accounts/signup.html", context | {"error": message}, status=400)
 

@@ -20,8 +20,10 @@ Google is NOT used to decide who may join. The email's domain still has to be a 
 university (A1), exactly as it does for a password signup.
 """
 
-#state - a random value that ties the callback to the browser that started it so it knows where to go back to
-#nonce - random value echoed back inside the ID token so we know the token was issued for this request and not replayed from somewhere else
+# state - a random value returned in the callback URL, which proves the response came back to the
+#         same browser that started the sign-in. This is the CSRF check for the callback.
+# nonce - a random value echoed back inside the signed ID token, which proves the token was issued
+#         for this request and is not an older one replayed from somewhere else.
 
 import secrets
 from dataclasses import dataclass
