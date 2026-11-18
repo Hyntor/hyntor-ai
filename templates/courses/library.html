@@ -1,9 +1,13 @@
-{# The course library (CRS-4, #24): every term's materials, a title filter, upload (LIB-1, #21), roster.
-
-   courses/views.py render_library passes `page` (one page of materials, newest first), `query`,
-   `members` (this term), `past_contributors`, `enrolled_this_term`, `max_mb`, and the result of an
-   upload: `uploaded` on success, or `upload_error` (with `existing` for a duplicate). #}
 {% extends "base.html" %}
+
+{% comment %}
+  The course library (CRS-4, #24): every term's materials, a title filter, upload (LIB-1, #21),
+  roster.
+
+  courses/views.py render_library passes `page` (one page of materials, newest first), `query`,
+  `members` (this term), `past_contributors`, `enrolled_this_term`, `max_mb`, and the result of an
+  upload: `uploaded` on success, or `upload_error` (with `existing` for a duplicate).
+{% endcomment %}
 
 {% block title %}{{ course.code }} library - Hyntor{% endblock %}
 

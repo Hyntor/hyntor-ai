@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% comment %}
-  The signed-in person's own account page, reached from their name in the header.
+  The signed-in person's own account page, reached from the circle of initials in the header.
 
   Read-only: who they are, which university they belong to, and the courses they are in this
   term. Joining and leaving still happen on the home page.
@@ -12,7 +12,11 @@
 
 {% block content %}
   <div class="welcome">
-    <h1>Your profile</h1>
+    {# The same circle as the header, larger, so the two read as one identity. #}
+    <div class="profile-head">
+      <span class="avatar avatar-large" aria-hidden="true">{{ current_user.initials }}</span>
+      <h1>Your profile</h1>
+    </div>
 
     <dl class="profile-details">
       <dt>Name</dt>
