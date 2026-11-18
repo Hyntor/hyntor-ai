@@ -109,27 +109,26 @@ class JoinCourseRefusedTests(TestCase):
         self.client.post(reverse("login"), {"email": self.user.email, "password": PASSWORD})
 
     def test_a_course_at_another_university_cannot_be_joined(self):
-        """The isolation rule. Posting a valid id from elsewhere must not work."""
+        """The isolation rule. Posting a valid id from elsewhere creates nothing."""
         elsewhere = University.objects.create(name="Demo University", email_domain="example.edu")
         their_course = Course.objects.create(
             university=elsewhere, code="DEMO 101", title="Someone Else's Course"
         )
 
-        response = self.client.post(reverse("course-join"), {"course_id": their_course.pk})
+        self.client.post(reverse("course-join"), {"course_id": their_course.pk})
 
-        self.assertEqual(response.status_code, 404)
         self.assertEqual(Enrollment.objects.count(), 0)
 
-    def test_a_course_that_does_not_exist_is_a_404(self):
-        response = self.client.post(reverse("course-join"), {"course_id": 999999})
+    def test_an_id_that_does_not_exist_creates_nothing(self):
+        self.client.post(reverse("course-join"), {"course_id": 999999})
 
-        self.assertEqual(response.status_code, 404)
         self.assertEqual(Enrollment.objects.count(), 0)
 
     def test_a_missing_course_id_does_not_crash(self):
+        """Submitting the form with nothing ticked."""
         response = self.client.post(reverse("course-join"), {})
 
-        self.assertEqual(response.status_code, 404)
+        self.assertRedirects(response, reverse("home"))
         self.assertEqual(Enrollment.objects.count(), 0)
 
     def test_a_signed_out_visitor_is_sent_to_sign_in(self):
@@ -143,7 +142,7 @@ class JoinCourseRefusedTests(TestCase):
 
     def test_joining_cannot_be_triggered_by_a_get(self):
         """A GET must not change anything, or a link could enroll someone without them asking."""
-        course = Course.objects.create(university=self.university, code="CSCI 1203", title="CS I")
+        course = Course.objects.create(university=self.university, code="CSCI 1011", title="CS I")
 
         response = self.client.get(reverse("course-join"), {"course_id": course.pk})
 
@@ -197,3 +196,81 @@ class LeaveCourseTests(TestCase):
         self.client.post(reverse("course-join"), {"course_id": self.course.pk})
 
         self.assertEqual(Enrollment.objects.filter(term=current_term()).count(), 1)
+
+
+class JoinSeveralCoursesTests(TestCase):
+    """Joining a whole timetable in one submission, rather than one course at a time."""
+
+    def setUp(self):
+        self.university = University.objects.create(
+            name="University of Mississippi", email_domain="go.olemiss.edu"
+        )
+        self.user = User.objects.create(
+            university=self.university,
+            email="student@go.olemiss.edu",
+            display_name="Casey Student",
+            password_hash=hash_password(PASSWORD),
+            email_verified_at=timezone.now(),
+        )
+        self.courses = [
+            Course.objects.create(university=self.university, code=code, title=title)
+            for code, title in [
+                ("CSCI 1011", "Computer Science I"),
+                ("CSCI 2011", "Computer Science III"),
+                ("CSCI 3087", "Software Design and Dev."),
+            ]
+        ]
+        self.client.post(reverse("login"), {"email": self.user.email, "password": PASSWORD})
+
+    def test_three_courses_join_in_one_submission(self):
+        response = self.client.post(reverse("course-join"), {"course_id": [c.pk for c in self.courses]})
+
+        self.assertRedirects(response, reverse("home"))
+        self.assertEqual(Enrollment.objects.filter(user=self.user, term=current_term()).count(), 3)
+
+    def test_all_three_appear_as_cards(self):
+        self.client.post(reverse("course-join"), {"course_id": [c.pk for c in self.courses]})
+
+        response = self.client.get(reverse("home"))
+
+        for course in self.courses:
+            with self.subTest(course=course.code):
+                self.assertContains(response, course.code)
+
+    def test_selecting_one_still_works(self):
+        """The common case has not been broken by supporting several."""
+        self.client.post(reverse("course-join"), {"course_id": [self.courses[0].pk]})
+
+        self.assertEqual(Enrollment.objects.count(), 1)
+
+    def test_submitting_nothing_selected_is_harmless(self):
+        response = self.client.post(reverse("course-join"), {})
+
+        self.assertRedirects(response, reverse("home"))
+        self.assertEqual(Enrollment.objects.count(), 0)
+
+    def test_a_course_already_joined_is_not_duplicated(self):
+        self.client.post(reverse("course-join"), {"course_id": [self.courses[0].pk]})
+
+        self.client.post(reverse("course-join"), {"course_id": [c.pk for c in self.courses]})
+
+        self.assertEqual(Enrollment.objects.count(), 3)
+
+    def test_an_other_university_id_is_ignored_without_losing_the_valid_ones(self):
+        """The valid choices in the same submission still go through; the bad one simply does not."""
+        elsewhere = University.objects.create(name="Demo University", email_domain="example.edu")
+        theirs = Course.objects.create(university=elsewhere, code="DEMO 101", title="Theirs")
+
+        self.client.post(reverse("course-join"), {"course_id": [self.courses[0].pk, theirs.pk]})
+
+        joined = Enrollment.objects.filter(user=self.user)
+        self.assertEqual(joined.count(), 1)
+        self.assertEqual(joined.first().course, self.courses[0])
+
+    def test_a_nonsense_id_does_not_crash(self):
+        response = self.client.post(
+            reverse("course-join"), {"course_id": [self.courses[0].pk, "not-a-number"]}
+        )
+
+        self.assertRedirects(response, reverse("home"))
+        self.assertEqual(Enrollment.objects.count(), 1)

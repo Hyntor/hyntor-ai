@@ -10,6 +10,7 @@
   --blue-deep: #1b2a6b; /* headings */
   --blue-tint: #eef2fd; /* section backgrounds */
   --blue-edge: #d4ddf9; /* borders on tinted areas */
+  --dot: #c7d4f7; /* the background dot grid: visible as texture, too faint to read as content */
 
   --ink: #1a1f36; /* body text */
   --muted: #5b6577; /* secondary text */
@@ -44,7 +45,8 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.85rem 1.5rem;
-  border-bottom: 1px solid var(--line);
+  background: var(--blue-tint);
+  border-bottom: 1px solid var(--blue-edge);
 }
 
 .brand {
@@ -491,9 +493,9 @@ a:focus-visible {
 /* The card is the link. The Leave button sits on top of it, so it needs its own stacking context. */
 .course-card {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1px solid var(--blue-edge);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--blue-tint);
   box-shadow: var(--shadow);
 }
 

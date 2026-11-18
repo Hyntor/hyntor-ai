@@ -36,10 +36,12 @@ SYSTEM_PROMPT = (
     "they ask again or are clearly stuck. Be brief and concrete. If you are unsure, say so."
 )
 
+# st.set_page_config: Sets the browser tab title and icon. Must run before any other st. call.
 st.set_page_config(page_title="Hyntor tutor", page_icon="🎓")
 
 # Colours come from .streamlit/config.toml, which has no option for heading colour. These two rules
 # finish the job: headings in the deep brand blue, matching h1 on the Django pages (app.css).
+# st.markdown: Renders markdown. unsafe_allow_html lets the <style> block through as real CSS.
 st.markdown(
     """
     <style>
@@ -53,15 +55,19 @@ st.markdown(
 
 def stop_with(message: str) -> None:
     """Show why they cannot be here, and stop. Nothing below this runs."""
+    # st.title: Renders the big page heading.
     st.title("Hyntor tutor")
+    # st.error: Renders a red error box.
     st.error(message)
     if HYNTOR_SITE_URL:
         st.markdown(f"[Sign in to Hyntor]({HYNTOR_SITE_URL}/login/) and open the tutor from there.")
+    # st.stop: Halts this script run; nothing below it renders.
     st.stop()
 
 
 def signed_in_user() -> dict:
     """Who this chat belongs to, from the hand-off token Django sent."""
+    # st.session_state: Per-browser store kept on the server, so it survives every rerun.
     if "hyntor_user" in st.session_state:
         return st.session_state.hyntor_user
 
@@ -70,6 +76,7 @@ def signed_in_user() -> dict:
         stop_with("This tutor is not configured correctly, so sign-in cannot be checked.")
 
     try:
+        # st.query_params: Reads and clears the page's URL query string.
         user = handoff.read_token(HANDOFF_SECRET, st.query_params.get("t"))
     except handoff.InvalidToken:
         stop_with("This link is not valid or has expired.")
@@ -80,6 +87,7 @@ def signed_in_user() -> dict:
     return user
 
 
+# st.cache_resource: Keeps one shared object per server process instead of rebuilding it each rerun.
 @st.cache_resource
 def gemini_client():
     """One client per server process, built only when a key is configured."""
@@ -129,13 +137,16 @@ def answer(question: str, history: list[dict], document: str = "") -> str:
 user = signed_in_user()
 
 st.title("Hyntor tutor")
+# st.caption: Renders small grey text.
 st.caption(f"Signed in as {user.get('name') or user.get('email')}")
 
 if not ai_is_configured():
+    # st.warning: Renders a yellow warning box.
     st.warning("The AI is not connected on this site yet. The chat works, but answers are placeholders.")
 
 # One attachment per session (TUT-10, #62). Its text is cached on the session so a rerun - which
 # Streamlit does on every keystroke - does not re-parse the file.
+# st.file_uploader: Renders a file picker and returns whatever was uploaded.
 uploaded = st.file_uploader("Attach a PDF or TXT file (optional)", type=("pdf", "txt"))
 
 document = ""
@@ -156,32 +167,42 @@ if uploaded is not None:
         st.warning(f"{st.session_state.attachment_error} You can still chat normally.")
     else:
         document = st.session_state.get("attachment") or ""
+        # st.success: Renders a green confirmation box.
         st.success(f"Reading from {uploaded.name}. Ask about it below.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": GREETING}]
 
 for message in st.session_state.messages:
+    # st.chat_message: A chat bubble, labelled with who is speaking.
     st.chat_message(message["role"]).write(message["content"])
 
+# st.chat_input: The message box pinned to the bottom. Returns the text once it is sent.
 if question := st.chat_input("Ask about your course..."):
     st.session_state.messages.append({"role": "user", "content": question})
     st.chat_message("user").write(question)
 
+    # st.spinner: Shows a 'working' indicator for as long as this block is running.
     with st.chat_message("assistant"), st.spinner("Thinking..."):
         reply = answer(question, st.session_state.messages, document)
+        # st.write: Renders whatever it is given, picking a sensible format for the type.
         st.write(reply)
 
     st.session_state.messages.append({"role": "assistant", "content": reply})
 
+# st.sidebar: Everything in this block renders in the collapsible left panel.
 with st.sidebar:
+    # st.header: Renders a section heading, a size down from title.
     st.header("This conversation")
     st.caption(f"{sum(1 for m in st.session_state.messages if m['role'] == 'user')} questions asked")
 
+    # st.button: Renders a button. Returns True only on the rerun its click triggered.
     if st.button("Start over"):
         st.session_state.messages = [{"role": "assistant", "content": GREETING}]
+        # st.rerun: Restarts the script from the top immediately.
         st.rerun()
 
     if HYNTOR_SITE_URL:
+        # st.divider: Draws a horizontal rule.
         st.divider()
         st.markdown(f"[Back to Hyntor]({HYNTOR_SITE_URL})")

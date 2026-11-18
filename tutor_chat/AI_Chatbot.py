@@ -1,8 +1,5 @@
 """Hyntor's AI tutor.
 
-Originally written by Bat-Orgil Erdenebat in multi-modal-ai-chatbot-rag. Adapted for Hyntor by
-requiring a signed-in user before anything renders, and by scoping long-term memory to that user.
-
 The sign-in itself happens on the Django site. This service never sees a password: Django checks
 the password, then sends the browser here with a short-lived signed token saying who the user is.
 See handoff.py.
@@ -27,17 +24,23 @@ HANDOFF_SECRET = os.environ.get("HANDOFF_SECRET", "")
 _SITE_HOST = os.environ.get("HYNTOR_SITE_HOST", "")
 HYNTOR_SITE_URL = os.environ.get("HYNTOR_SITE_URL") or (f"https://{_SITE_HOST}" if _SITE_HOST else "")
 
+# st.set_page_config: Sets the browser tab title and icon. Must run before any other st. call.
 st.set_page_config(page_title="Hyntor tutor", page_icon="🎓")
 
 
 def sign_in_required(message: str) -> None:
     """Stop rendering and explain how to get in. Nothing below this point runs."""
+    # st.title: Renders the big page heading.
     st.title("Hyntor tutor")
+    # st.error: Renders a red error box.
     st.error(message)
     if HYNTOR_SITE_URL:
+        # st.markdown: Renders markdown, so links and formatting work.
         st.markdown(f"[Sign in to Hyntor]({HYNTOR_SITE_URL}/login/) and open the tutor from there.")
     else:
+        # st.info: Renders a blue informational box.
         st.info("Sign in to Hyntor and open the tutor from there.")
+    # st.stop: Halts this script run; nothing below it renders.
     st.stop()
 
 
@@ -48,6 +51,7 @@ def require_signed_in_user() -> dict:
     Streamlit keeps per browser session on the server, so the token is not needed again and does
     not sit in the address bar while someone uses the tutor.
     """
+    # st.session_state: Per-browser store kept on the server, so it survives every rerun.
     if "hyntor_user" in st.session_state:
         return st.session_state.hyntor_user
 
@@ -57,6 +61,7 @@ def require_signed_in_user() -> dict:
         sign_in_required("This tutor is not configured correctly, so sign-in cannot be checked.")
 
     try:
+        # st.query_params: Reads and clears the page's URL query string.
         payload = handoff.read_token(HANDOFF_SECRET, st.query_params.get("t"))
     except handoff.InvalidToken:
         # One message for every failure: missing, altered, or expired. A visitor who is simply late
@@ -75,6 +80,7 @@ hyntor_user = require_signed_in_user()
 USER_KEY = hyntor_user["sub"]
 
 
+# st.cache_resource: Keeps one shared object per server process instead of rebuilding it each rerun.
 @st.cache_resource
 def get_client() -> genai.Client:
     """One Gemini client per server process. Cached so each rerun does not build a new one."""
@@ -84,6 +90,7 @@ def get_client() -> genai.Client:
 if not (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")):
     st.title("Hyntor tutor")
     st.error("No AI provider key is configured, so the tutor cannot answer yet.")
+    # st.caption: Renders small grey text.
     st.caption("An administrator sets GEMINI_API_KEY on this service.")
     st.stop()
 
@@ -171,6 +178,7 @@ def load_knowledge_file(filename: str) -> str:
         return f.read()
 
 
+# st.file_uploader: Renders a file picker and returns whatever was uploaded.
 uploaded_file = st.file_uploader("Upload a PDF or TXT files", type=("txt", "pdf"))
 
 if "file_cache" not in st.session_state:
@@ -189,6 +197,7 @@ if uploaded_file:
     document_data = st.session_state.file_cache[cache_key]
 
     if not document_data["text"]:
+        # st.warning: Renders a yellow warning box.
         st.warning(
             "No text could be extracted from this file. If it's a PDF, make sure it "
             "contains selectable text rather than scanned images. You can still chat normally."
@@ -202,9 +211,12 @@ if document_data["text"]:
         f"--- BEGIN DOCUMENT ---\n{document_data['text']}\n--- END DOCUMENT ---"
     )
 
+# st.sidebar: Everything in this block renders in the collapsible left panel.
+# st.selectbox: A dropdown. Returns the option currently chosen.
 persona_choice = st.sidebar.selectbox("Choose persona", ["Travel Planner", "Math Tutor", "Chef", "Custom"])
 
 if persona_choice == "Custom":
+    # st.text_input: A single-line text box. Returns its current contents.
     persona = st.sidebar.text_input("Custom persona", "Friendly Assistant")
 else:
     persona = persona_choice
@@ -258,8 +270,10 @@ if "last_summarization_tokens" not in st.session_state:
     st.session_state.last_summarization_tokens = 0
 
 with st.sidebar:
+    # st.header: Renders a section heading, a size down from title.
     st.header("📊 Conversation Summary")
     if st.session_state.summary:
+        # st.write: Renders whatever it is given, picking a sensible format for the type.
         st.write(st.session_state.summary)
     else:
         st.info("Summary will appear here after a few messages.")
@@ -278,11 +292,13 @@ with st.sidebar:
             st.markdown(f"- **Summarization API Call:** {st.session_state.last_summarization_tokens} tokens")
             st.caption("(Summarization uses gemini-3.1-flash-lite, which is much cheaper)")
 
+        # st.divider: Draws a horizontal rule.
         st.divider()
 
     st.markdown(f"**Cumulative Total:** {st.session_state.total_tokens} tokens")
     st.caption("Lower tokens = lower costs!")
 
+    # st.button: Renders a button. Returns True only on the rerun its click triggered.
     if st.button("🔄 Reset Conversation"):
         st.session_state.messages = [{"role": "assisstant", "content": "Yo what up boi, U need help?"}]
         st.session_state.context = list(st.session_state.messages)
@@ -291,6 +307,7 @@ with st.sidebar:
         st.session_state.last_input_tokens = 0
         st.session_state.last_output_tokens = 0
         st.session_state.last_summarization_tokens = 0
+        # st.rerun: Restarts the script from the top immediately.
         st.rerun()
 
     st.header("🧠 Long-Term Memory")
@@ -305,10 +322,14 @@ with st.sidebar:
             if not type_memories:
                 continue
 
+            # st.subheader: Renders a sub-section heading.
             st.subheader(memory_type.capitalize())
             for m in type_memories:
+                # st.expander: A collapsible block; its contents stay hidden until the user opens it.
                 with st.expander(m["content"][:50] + ("..." if len(m["content"]) > 50 else "")):
+                    # st.text_area: A multi-line text box. Returns its current contents.
                     edited_content = st.text_area("Content", value=m["content"], key=f"mem_content_{m['id']}")
+                    # st.columns: Splits the page into side-by-side columns.
                     save_col, delete_col = st.columns(2)
                     with save_col:
                         if st.button("💾 Save", key=f"mem_save_{m['id']}"):
@@ -323,14 +344,17 @@ with st.sidebar:
                             st.rerun()
 
     st.divider()
+    # st.checkbox: A tick box. Returns True while it is ticked.
     confirm_wipe = st.checkbox("Confirm permanent deletion of all my memories")
     if st.button("🗑️ Delete My Memories", disabled=not confirm_wipe):
         memory.delete_all_memories(USER_KEY)
         st.rerun()
 
 for msg in st.session_state.messages:
+    # st.chat_message: A chat bubble, labelled with who is speaking.
     st.chat_message(msg["role"]).write(msg["content"])
 
+# st.chat_input: The message box pinned to the bottom. Returns the text once it is sent.
 if prompt := st.chat_input("Yo we can chat here..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.session_state.context.append({"role": "user", "content": prompt})
@@ -407,6 +431,7 @@ if prompt := st.chat_input("Yo we can chat here..."):
                     usage["metadata"] = chunk.usage_metadata
                 yield chunk.text
 
+        # st.write_stream: Renders a streaming reply piece by piece as the model produces it.
         msg = st.write_stream(stream_text())
 
         if knowledge_filename:
@@ -433,6 +458,7 @@ with st.sidebar:
             st.markdown(f"**Pages:** {document_data['pages']}")
 
         if document_data["text"]:
+            # st.success: Renders a green confirmation box.
             st.success("✅ Document loaded! Ask questions below.")
     else:
         st.info("No document uploaded yet. Upload a file above to get started!")

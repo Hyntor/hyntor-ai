@@ -1,8 +1,16 @@
-{# The shell every page sits inside: head, site header, main content block, footer.
+{% comment %}
+  The shell every page sits inside: head, site header, main content block, footer.
 
-   The header shows either the signed-in person's name and a Sign out button, or the two ways in.
-   `current_user` comes from accounts/context_processors.py, so no view has to pass it.
-   `main_class` lets a page widen itself: forms use the narrow column, the landing page does not. #}
+  The header shows either the signed-in person's name, which links to their profile, and a Sign
+  out button, or the two ways in.
+  `current_user` comes from accounts/context_processors.py, so no view has to pass it.
+  `main_class` lets a page widen itself: forms use the narrow column, the landing page does not.
+
+  URLs come straight from accounts/urls.py and courses/urls.py, so the templates do not have to
+  know what the view function is called. {% templatetag openblock %} url 'name'
+  {% templatetag closeblock %} looks up the URL for the view named 'name' and fills in any
+  arguments.
+{% endcomment %}
 {% load static %}
 <!doctype html>
 <html lang="en">
@@ -19,13 +27,24 @@
         <span class="brand-mark" aria-hidden="true">H</span>
         Hyntor
       </a>
-
+      {% comment %}
+        current_user comes from accounts/context_processors.py.
+        middleware.py sets request.user to the signed-in user, or to None when there is no valid
+        session cookie, and context_processors.py exposes that to every template as current_user.
+        (None rather than Django's AnonymousUser: Hyntor does not install django.contrib.auth.)
+      {% endcomment %}
       {% if current_user %}
-        <form class="header-form" method="post" action="{% url 'logout' %}">
-          {% csrf_token %}
-          <span class="signed-in">{{ current_user.display_name }}</span>
-          <button class="button button-quiet" type="submit">Sign out</button>
-        </form>
+        <div class="header-form">
+          {# The name is the way in to the profile page, which is where people look for it. #}
+          <a class="signed-in" href="{% url 'profile' %}">
+            <span class="avatar" aria-hidden="true">{{ current_user.display_name|first|upper }}</span>
+            {{ current_user.display_name }}
+          </a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="button button-quiet" type="submit">Sign out</button>
+          </form>
+        </div>
       {% else %}
         <nav class="header-nav">
           <a class="button button-quiet" href="{% url 'login' %}">Sign in</a>

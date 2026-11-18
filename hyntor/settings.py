@@ -27,7 +27,8 @@ if not SECRET_KEY:
         # Never fall back to a published key on a real deployment. Stop instead.
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG=0")
     SECRET_KEY = "dev-only-insecure-key-do-not-use-in-production"
-
+# Which hostnames the site answers to. Django refuses any request whose Host header is not listed
+# here - it is not about which users or addresses can reach the server.
 ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
 ]

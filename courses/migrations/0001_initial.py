@@ -34,15 +34,15 @@ class Migration(migrations.Migration):
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='enrollments', to='accounts.user')),
             ],
         ),
-        migrations.AddConstraint(
+        migrations.AddConstraint( #separate AddConstraint operations are needed because the models don't exist yet when the first one is created
             model_name='course',
             constraint=models.UniqueConstraint(fields=('university', 'code'), name='unique_course_code_per_university'),
         ),
-        migrations.AddIndex(
+        migrations.AddIndex( #Django automatically generates an index to support the unique constraint
             model_name='enrollment',
             index=models.Index(fields=['course', 'term'], name='courses_enr_course__47c30a_idx'),
         ),
-        migrations.AddConstraint(
+        migrations.AddConstraint(#makes sure that the same user can't be enrolled in the same course for the same term more than once
             model_name='enrollment',
             constraint=models.UniqueConstraint(fields=('user', 'course', 'term'), name='unique_enrollment_per_term'),
         ),

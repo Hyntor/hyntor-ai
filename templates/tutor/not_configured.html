@@ -1,7 +1,9 @@
-{# Shown when no tutor service is configured for this environment - local development, or before
-   the second Render service exists. Says so plainly instead of redirecting nowhere (G6). #}
 {% extends "base.html" %}
 
+{% comment %}
+  Shown when no tutor service is configured for this environment - local development, or before
+  the second Render service exists. Says so plainly instead of redirecting nowhere (G6).
+{% endcomment %}
 {% block title %}Tutor unavailable - Hyntor{% endblock %}
 
 {% block content %}
