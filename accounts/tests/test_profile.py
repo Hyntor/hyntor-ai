@@ -98,7 +98,49 @@ class ProfilePageTests(TestCase):
         self.assertRedirects(response, reverse("login"))
 
     def test_the_header_links_to_it(self):
-        """The name in the header is how people reach this page."""
+        """The circle of initials in the header is how people reach this page."""
         response = self.client.get(reverse("home"))
 
         self.assertContains(response, reverse("profile"))
+
+    def test_the_header_shows_the_initials_and_not_the_full_name(self):
+        """The header is a circle of initials only, with the name on the link for a screen reader."""
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, 'class="avatar">CS<')
+        self.assertContains(response, 'aria-label="Your profile, Casey Student"')
+        self.assertNotContains(response, ">Casey Student</a>")
+
+    def test_the_profile_page_shows_the_same_initials(self):
+        response = self.client.get(reverse("profile"))
+
+        self.assertContains(response, "avatar-large")
+        self.assertContains(response, ">CS<")
+
+
+class InitialsTests(TestCase):
+    """User.initials: the one or two letters shown in the avatar circle."""
+
+    def assert_initials(self, display_name, expected):
+        self.assertEqual(User(display_name=display_name).initials, expected)
+
+    def test_a_first_and_last_name_give_two_letters(self):
+        self.assert_initials("Addie Brawley", "AB")
+
+    def test_a_middle_name_is_skipped(self):
+        """First and last, so a middle name does not push the last initial out."""
+        self.assert_initials("Mary Jane Watson", "MW")
+
+    def test_one_name_gives_one_letter(self):
+        self.assert_initials("Prince", "P")
+
+    def test_lowercase_is_capitalised(self):
+        self.assert_initials("bat-orgil erdenebat", "BE")
+
+    def test_extra_spaces_do_not_produce_blanks(self):
+        self.assert_initials("  Addie   Brawley  ", "AB")
+
+    def test_an_empty_name_gives_a_placeholder_rather_than_an_empty_circle(self):
+        """display_name is required at signup, but a blank one must not render an empty bubble."""
+        self.assert_initials("", "?")
+        self.assert_initials("   ", "?")

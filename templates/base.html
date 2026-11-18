@@ -1,8 +1,8 @@
 {% comment %}
   The shell every page sits inside: head, site header, main content block, footer.
 
-  The header shows either the signed-in person's name, which links to their profile, and a Sign
-  out button, or the two ways in.
+  The header shows either a circle of the signed-in person's initials, which links to their
+  profile, and a Sign out button, or the two ways in.
   `current_user` comes from accounts/context_processors.py, so no view has to pass it.
   `main_class` lets a page widen itself: forms use the narrow column, the landing page does not.
 
@@ -35,10 +35,18 @@
       {% endcomment %}
       {% if current_user %}
         <div class="header-form">
-          {# The name is the way in to the profile page, which is where people look for it. #}
-          <a class="signed-in" href="{% url 'profile' %}">
-            <span class="avatar" aria-hidden="true">{{ current_user.display_name|first|upper }}</span>
-            {{ current_user.display_name }}
+          {% comment %}
+            The circle of initials is the way in to the profile page, which is where people look
+            for it. The initials are the only visible label, so the link carries an aria-label and
+            a title: a screen reader and a hover both get the full name.
+          {% endcomment %}
+          <a
+            class="avatar-link"
+            href="{% url 'profile' %}"
+            title="{{ current_user.display_name }} - your profile"
+            aria-label="Your profile, {{ current_user.display_name }}"
+          >
+            <span class="avatar">{{ current_user.initials }}</span>
           </a>
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}

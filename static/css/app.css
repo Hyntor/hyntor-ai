@@ -29,8 +29,19 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--ink);
-  background: #fff;
   line-height: 1.6;
+
+  /* A faint blue dot grid behind the whole page, for texture.
+
+     Drawn with a repeating radial-gradient rather than an image: no file to load, it stays crisp
+     at any zoom, and the colour comes from the same palette as everything else. It is body's own
+     background, not a z-index:-1 pseudo-element, because a negative z-index behind an opaque
+     background is a stacking trap - this cannot be hidden. `fixed` keeps the dots still while
+     the page scrolls. */
+  background-color: #fff;
+  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.5px);
+  background-size: 22px 22px;
+  background-attachment: fixed;
 }
 
 a {
@@ -85,9 +96,35 @@ a {
   gap: 0.75rem;
 }
 
-.signed-in {
-  color: var(--muted);
-  font-size: 0.9rem;
+/* The circle of initials in the header. It is the only control for the profile page, so it gets a
+   real focus ring and a hover state rather than relying on the text beside it. */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  user-select: none;
+}
+
+.avatar-link {
+  display: inline-flex;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.avatar-link:hover .avatar {
+  background: var(--blue-deep);
+}
+
+.avatar-link:focus-visible {
+  outline: 2px solid var(--blue-deep);
+  outline-offset: 2px;
 }
 
 /* ---------------------------------------------------------------- layout */
@@ -703,4 +740,129 @@ a:focus-visible {
   border-radius: var(--radius);
   background: var(--blue-tint);
   color: var(--blue-deep);
+}
+
+/* ---------------------------------------------------------------- profile */
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-head h1 {
+  margin: 0;
+}
+
+.avatar-large {
+  width: 3.25rem;
+  height: 3.25rem;
+  font-size: 1.1rem;
+}
+
+/* Label and value in two columns. max-content sizes the label column to the widest label, so
+   every value starts at the same x position - a plain <dl> indents each dd onto its own line. */
+.profile-details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: baseline;
+  gap: 0.75rem 2rem;
+  margin: 1.5rem 0 0;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--blue-edge);
+  border-radius: var(--radius);
+  background: var(--blue-tint);
+}
+
+.profile-details dt {
+  margin: 0;
+  color: var(--blue-deep);
+  font-weight: 600;
+}
+
+.profile-details dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere; /* a long email must not widen the panel */
+}
+
+.profile-courses {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-courses a {
+  display: block;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--blue-edge);
+  border-radius: var(--radius);
+  background: var(--blue-tint);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.profile-courses a:hover {
+  border-color: var(--blue);
+}
+
+.profile-back {
+  margin-top: 2rem;
+}
+
+/* ---------------------------------------------------------------- course picker */
+
+.course-picker {
+  max-height: 22rem;
+  overflow-y: auto;
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 1rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.course-picker-level {
+  position: sticky;
+  top: 0;
+  margin: 0;
+  padding: 0.6rem 0 0.4rem;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.course-option {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.course-option:hover {
+  background: var(--blue-tint);
+}
+
+.course-option input {
+  margin: 0;
+  accent-color: var(--blue);
+}
+
+.course-option-code {
+  font-weight: 600;
+  color: var(--blue-deep);
+}
+
+.course-option-title {
+  color: var(--muted);
 }

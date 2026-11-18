@@ -60,6 +60,21 @@ class User(models.Model):
         """Whether we know this person can read mail at their address. Gates the AI tutor."""
         return self.email_verified_at is not None
 
+    @property
+    def initials(self) -> str:
+        """One or two letters for the avatar circle: first and last name initials.
+
+        "Addie Brawley" -> "AB". A single name gives one letter, and a middle name is skipped, so
+        "Mary Jane Watson" is still "MW". Computed here rather than in the template because Django's
+        template language cannot split a string, and both the header and the profile page need it.
+        """
+        parts = self.display_name.split()
+        if not parts:
+            return "?"
+        if len(parts) == 1:
+            return parts[0][0].upper()
+        return (parts[0][0] + parts[-1][0]).upper()
+
     @staticmethod
     def normalize_email(email: str) -> str:
         """Case and whitespace are normalized before the uniqueness check (ACC-3)."""
