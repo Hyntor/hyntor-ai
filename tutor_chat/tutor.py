@@ -13,6 +13,7 @@ Run it alongside the Django site:
 import os
 
 import attachments
+import gemini
 import handoff
 import streamlit as st
 from dotenv import load_dotenv
@@ -123,14 +124,18 @@ def answer(question: str, history: list[dict], document: str = "") -> str:
     # overwrite it with a later message.
     instruction = SYSTEM_PROMPT + document
     try:
-        response = gemini_client().models.generate_content(
-            model=MODEL,
-            contents=contents,
-            config=types.GenerateContentConfig(system_instruction=instruction),
+        # Retried on a transient failure, and logged with its real status, in gemini.generate.
+        response = gemini.generate(
+            lambda: gemini_client().models.generate_content(
+                model=MODEL,
+                contents=contents,
+                config=types.GenerateContentConfig(system_instruction=instruction),
+            )
         )
         return response.text or "I did not manage to answer that. Try rephrasing it?"
     except Exception as exc:  # noqa: BLE001 - any provider failure must stay inside the chat
-        # A provider outage should read as a message in the conversation, not a crashed page.
+        # A provider outage should read as a message in the conversation, not a crashed page. The
+        # detail is in the log; the student gets the short version.
         return f"I could not reach the AI service just now ({type(exc).__name__}). Please try again."
 
 
