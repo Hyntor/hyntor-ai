@@ -63,18 +63,18 @@ class FakeAiProvider:
         rather than an object. Rather than keep a second fake for that shape, this wraps the same
         one: the script and the recorded calls work exactly as they do for generate().
 
-        The last student message becomes the prompt, and the conversation so far is kept on the
-        call as options['history'], so a test can assert on what the tutor was given:
+        The last student message becomes the prompt, and the conversation and the tier the server
+        decided are kept on the call as options, so a test can assert on what the tutor was given:
 
             provider = FakeAiProvider(default='ok')
             with mock.patch('tutor.api.provider.reply_for', provider.as_reply_for()):
                 ...
-            self.assertEqual(provider.calls[0].options['history'], [...])
+            self.assertEqual(provider.calls[0].options["tier"], 1)
         """
 
-        def reply_for(session, history):
+        def reply_for(session, history, tier=None):
             prompt = history[-1]["content"] if history else ""
-            return self.generate(prompt, session=session, history=history)
+            return self.generate(prompt, session=session, history=history, tier=tier)
 
         return reply_for
 
