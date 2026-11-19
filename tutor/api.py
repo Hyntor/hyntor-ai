@@ -23,6 +23,8 @@ def _message_json(message: TutorMessage) -> dict:
         "ordinal": message.ordinal,
         "role": message.author_role,
         "text": message.body,
+        # None on a student message, and in concept mode. The badge is only drawn when set.
+        "hint_tier": message.hint_tier,
         "created_at": message.created_at.isoformat(),
     }
 

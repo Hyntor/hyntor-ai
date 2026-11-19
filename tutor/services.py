@@ -9,8 +9,11 @@ from accounts.models import User
 from courses.models import Enrollment
 from courses.terms import current_term
 from tutor.models import MessageAuthorRole, TutorMessage, TutorSession
+from tutor.tiers import replies_in, tier_for
 
-ReplyFor = Callable[[TutorSession, list[dict]], str]
+# The tier is passed in, not worked out by the provider: tutor/tiers.py is the only thing that
+# decides it (TUT-3, #27).
+ReplyFor = Callable[[TutorSession, list[dict], int | None], str]
 
 
 def start_session(user: User, course_id: int, mode: str) -> TutorSession:
@@ -43,6 +46,10 @@ def send_message(user: User, session_id: int, text: str, reply_for: ReplyFor) ->
         history = [{"role": m.author_role, "content": m.body} for m in session.messages.order_by("ordinal")]
         history.append({"role": MessageAuthorRole.STUDENT, "content": text})
 
+        # Counted from the rows this transaction holds a lock on, so two parallel sends cannot
+        # both be served the same tier (the row lock above serializes them).
+        tier = tier_for(session, replies_so_far=replies_in(session))
+
         student_message = TutorMessage.objects.create(
             tutor_session=session, ordinal=last + 1, author_role=MessageAuthorRole.STUDENT, body=text
         )
@@ -50,7 +57,8 @@ def send_message(user: User, session_id: int, text: str, reply_for: ReplyFor) ->
             tutor_session=session,
             ordinal=last + 2,
             author_role=MessageAuthorRole.ASSISTANT,
-            body=reply_for(session, history),
+            body=reply_for(session, history, tier),
+            hint_tier=tier,
         )
 
         # auto_now only fires inside save(), and only for fields named in update_fields
